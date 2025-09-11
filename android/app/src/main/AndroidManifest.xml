@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:label="Fashion Hub"
+        android:label="47 Market"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

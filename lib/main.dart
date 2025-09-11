@@ -30,7 +30,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return ShadApp(
-      title: 'Fashion Hub',
+      title: '47 Market',
       themeMode: ref.watch(themeModeProvider),
       theme: ShadThemeData(
           colorScheme: const ShadOrangeColorScheme.light(),
