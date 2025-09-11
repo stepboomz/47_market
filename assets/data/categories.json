@@ -1,0 +1,32 @@
+[
+  {
+    "id": "all",
+    "name": "ทั้งหมด",
+    "isSelected": true
+  },
+  {
+    "id": "readyMeals",
+    "name": "อาหารสำเร็จรูป",
+    "isSelected": false
+  },
+  {
+    "id": "ingredients",
+    "name": "วัตถุดิบ",
+    "isSelected": false
+  },
+  {
+    "id": "snacks",
+    "name": "ขนม",
+    "isSelected": false
+  },
+  {
+    "id": "beverages",
+    "name": "เครื่องดื่ม",
+    "isSelected": false
+  },
+  {
+    "id": "seasonings",
+    "name": "เครื่องปรุงส่วนผสม",
+    "isSelected": false
+  }
+]
