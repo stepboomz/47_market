@@ -135,7 +135,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                      flex: 3,
+                      flex: 4,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 30),
                         child: Column(
@@ -180,7 +180,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         ),
                       )),
                   Expanded(
-                      flex: 10,
+                      flex: 6,
                       child: Padding(
                           padding: const EdgeInsets.only(right: 20.0,left: 20.0),
                         child: selectedItems.isEmpty

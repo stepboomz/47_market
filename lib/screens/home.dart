@@ -203,7 +203,7 @@ class _HomeState extends ConsumerState<Home> {
                       ),
                     )),
                 Expanded(
-                    flex: 10,
+                    flex: 7,
                     child: Padding(
                       padding: const EdgeInsets.only(right: 20.0,left: 20.0),
                       child: ItemsGridview(
