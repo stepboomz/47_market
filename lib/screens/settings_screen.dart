@@ -92,7 +92,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     builder: (context, ref, child) {
                       final favorites = ref.watch(favoriteProvider);
                       return Text(
-                        '${favorites.length} รายการ',
+                        '${favorites.length} Item',
                         style: GoogleFonts.imprima(
                           fontSize: 14,
                           color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
