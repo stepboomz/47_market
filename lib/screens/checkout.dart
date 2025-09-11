@@ -1,4 +1,5 @@
 import 'package:brand_store_app/providers/cart_provider.dart';
+import 'package:brand_store_app/services/storage_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +22,27 @@ class _CheckoutState extends ConsumerState<Checkout> {
   String? savedName;
   String? savedPhone;
   String? savedAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedAddress();
+  }
+
+  Future<void> _loadSavedAddress() async {
+    final info = await StorageService.loadCheckoutInfo();
+    setState(() {
+      savedName = info['name'];
+      savedPhone = info['phone'];
+      savedAddress = info['address'];
+      // if we already have saved info, show display mode
+      if ((savedName?.isNotEmpty ?? false) ||
+          (savedPhone?.isNotEmpty ?? false) ||
+          (savedAddress?.isNotEmpty ?? false)) {
+        showAddressForm = false;
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -239,7 +261,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                         setState(() {
                           showAddressForm = false;
                         });
-                        // ล้างข้อมูลใน text field
+                        // ล้างข้อมูลใน text field (ไม่ลบที่บันทึกไว้)
                         nameController.clear();
                         phoneController.clear();
                         addressController.clear();
@@ -262,13 +284,18 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         setState(() {
                           showAddressForm = false;
                           savedName = nameController.text;
                           savedPhone = phoneController.text;
                           savedAddress = addressController.text;
                         });
+                        await StorageService.saveCheckoutInfo(
+                          name: savedName ?? '',
+                          phone: savedPhone ?? '',
+                          address: savedAddress ?? '',
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
