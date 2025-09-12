@@ -1,12 +1,15 @@
 
 import 'package:brand_store_app/providers/theme_provider.dart';
 import 'package:brand_store_app/providers/favorite_provider.dart';
+import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:brand_store_app/screens/onboarding.dart';
 import 'package:brand_store_app/services/auth_service.dart';
+import 'package:brand_store_app/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -16,6 +19,69 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  void _showClearCacheDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Clear Cache',
+            style: GoogleFonts.imprima(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'This will clear all stored data including:\n• Cart items\n• Favorite items\n• Theme settings\n• Checkout information\n\nThis action cannot be undone.',
+            style: GoogleFonts.imprima(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.imprima(fontSize: 16, color: Colors.grey[600]),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _clearAllData();
+                if (mounted) {
+                  ShadToaster.of(context).show(
+                    ShadToast(
+                      title: Text('Cache cleared successfully'),
+                      duration: const Duration(milliseconds: 2000),
+                    ),
+                  );
+                }
+              },
+              child: Text(
+                'Clear',
+                style: GoogleFonts.imprima(fontSize: 16, color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _clearAllData() async {
+    try {
+      // Clear SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      
+      // Clear providers
+      ref.read(cartProvider.notifier).clearCart();
+      ref.read(favoriteProvider.notifier).clearFavorites();
+      
+      // Reset theme to default
+      ref.read(themeModeProvider.notifier).setTheme(ThemeMode.light);
+      
+    } catch (e) {
+      print('Error clearing cache: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,6 +168,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   onTap: () {
                     Navigator.pushNamed(context, '/favorites');
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  title: Text('Clear Cache', style: GoogleFonts.imprima(fontSize: 18)),
+                  subtitle: Text('Clear all stored data', style: GoogleFonts.imprima(fontSize: 14)),
+                  trailing: const Icon(Icons.delete_outline),
+                  onTap: () {
+                    _showClearCacheDialog(context);
                   },
                 ),
                 const Divider(),

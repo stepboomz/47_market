@@ -79,192 +79,197 @@ class _DetailsState extends ConsumerState<Details> {
         body: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Hero(
-                  tag: widget.tagPrefix + (selectedVariant?.image ?? widget.shirt.image),
-                  child: (widget.shirt.networkImage == null ||
-                          widget.shirt.networkImage! == false)
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: Image.asset(
-                              selectedVariant?.image ?? widget.shirt.image,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  color: Theme.of(context).canvasColor,
-                                ),
-                                Center(
-                                  child: Image.network(
-                                    (selectedVariant?.image ?? widget.shirt.image)
-                                        .replaceAll('/1.png', '/thumbnail.png'),
-                                    fit: BoxFit.cover,
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) {
-                                        return child;
-                                      }
-                                      return Shimmer.fromColors(
-                                        baseColor: Theme.of(context).colorScheme.surfaceDim,
-                                        highlightColor: Colors.grey[100]!,
-                                        child: Container(
-                                          width: double.infinity,
-                                          color: Colors.grey[300],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: Hero(
-                    tag: widget.tagPrefix + (selectedVariant?.name ?? widget.shirt.name),
-                    child: Text(
-                      selectedVariant?.name ?? widget.shirt.name,
-                      softWrap: true,
-                      style: GoogleFonts.imprima(
-                        fontSize: 30,
-                        height: 1.2,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (widget.shirt.variants.isNotEmpty) ...[
-                  SizedBox(
-                    height: 40,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: widget.shirt.variants.length,
-                      itemBuilder: (context, index) {
-                        final variant = widget.shirt.variants[index];
-                        final isSelected = selectedVariant?.id == variant.id;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedVariant = variant;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Colors.orange : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(
-                                color: isSelected ? Colors.orange : Colors.grey[300]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              variant.name,
-                              style: GoogleFonts.imprima(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontSize: 14,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                ],
-                if ((selectedVariant?.description ?? widget.shirt.description).isNotEmpty) ...[
-                  Text(
-                    "- รายละเอียด",
-                    style: GoogleFonts.imprima(
-                      fontSize: 17,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    selectedVariant?.description ?? widget.shirt.description,
-                    style: GoogleFonts.imprima(
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Hero(
-                      tag: widget.tagPrefix + (selectedVariant?.price ?? widget.shirt.price).toString(),
-                      child: AnimatedPrice(
-                        priceString: (selectedVariant?.price ?? widget.shirt.price).toString(),
-                      ),
-                    ),
-                    const Spacer(),
-                    FilledButton(
-                      onPressed: () async {
-                        ref.read(cartProvider.notifier).addItem(widget.shirt, selectedVariant: selectedVariant);
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Center(
-                                child: ShadDialog(
-                                  title: Text('Adding to Cart'),
-                                  child: ShadProgress(),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                        await Future.delayed(const Duration(seconds: 1));
-                        if (!context.mounted) return;
-                        Navigator.pop(context);
-                        ShadToaster.of(context).show(const ShadToast(
-                          title: Text("เพิ่มสินค้า ใส่ตะกร้าเรียบร้อยแล้ว"),
-                          duration: Duration(milliseconds: 1000),
-                        ));
-                        Navigator.pop(context);
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: Text(
-                        "Add To Cart",
-                        style: GoogleFonts.imprima(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ));
+                 // รูปสินค้าแบบเต็มความกว้าง
+                 Hero(
+                   tag: widget.tagPrefix + (selectedVariant?.image ?? widget.shirt.image),
+                   child: (widget.shirt.networkImage == null ||
+                           widget.shirt.networkImage! == false)
+                       ? AspectRatio(
+                           aspectRatio: 1,
+                           child: Image.asset(
+                             selectedVariant?.image ?? widget.shirt.image,
+                             fit: BoxFit.cover,
+                             width: double.infinity,
+                           ),
+                         )
+                       : AspectRatio(
+                           aspectRatio: 1,
+                           child: Stack(
+                             children: [
+                               Container(
+                                 width: double.infinity,
+                                 color: Theme.of(context).canvasColor,
+                               ),
+                               Center(
+                                 child: Image.network(
+                                   (selectedVariant?.image ?? widget.shirt.image)
+                                       .replaceAll('/1.png', '/thumbnail.png'),
+                                   fit: BoxFit.cover,
+                                   width: double.infinity,
+                                   loadingBuilder: (context, child, loadingProgress) {
+                                     if (loadingProgress == null) {
+                                       return child;
+                                     }
+                                     return Shimmer.fromColors(
+                                       baseColor: Theme.of(context).colorScheme.surfaceDim,
+                                       highlightColor: Colors.grey[100]!,
+                                       child: Container(
+                                         width: double.infinity,
+                                         color: Colors.grey[300],
+                                       ),
+                                     );
+                                   },
+                                 ),
+                               ),
+                             ],
+                           ),
+                         ),
+                 ),
+                 // เนื้อหาอื่นๆ มี padding
+                 Padding(
+                   padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                   child: Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       const SizedBox(height: 16),
+                       Padding(
+                         padding: const EdgeInsets.only(right: 20),
+                         child: Hero(
+                           tag: widget.tagPrefix + (selectedVariant?.name ?? widget.shirt.name),
+                           child: Text(
+                             selectedVariant?.name ?? widget.shirt.name,
+                             softWrap: true,
+                             style: GoogleFonts.imprima(
+                               fontSize: 28,
+                               height: 1.2,
+                               fontWeight: FontWeight.bold,
+                             ),
+                           ),
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       if (widget.shirt.variants.isNotEmpty) ...[
+                         SizedBox(
+                           height: 40,
+                           child: ListView.builder(
+                             scrollDirection: Axis.horizontal,
+                             itemCount: widget.shirt.variants.length,
+                             itemBuilder: (context, index) {
+                               final variant = widget.shirt.variants[index];
+                               final isSelected = selectedVariant?.id == variant.id;
+                               return GestureDetector(
+                                 onTap: () {
+                                   setState(() {
+                                     selectedVariant = variant;
+                                   });
+                                 },
+                                 child: Container(
+                                   margin: const EdgeInsets.only(right: 10),
+                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                   decoration: BoxDecoration(
+                                     color: isSelected ? Colors.orange : Colors.grey[200],
+                                     borderRadius: BorderRadius.circular(25),
+                                     border: Border.all(
+                                       color: isSelected ? Colors.orange : Colors.grey[300]!,
+                                       width: 1,
+                                     ),
+                                   ),
+                                   child: Text(
+                                     variant.name,
+                                     style: GoogleFonts.imprima(
+                                       color: isSelected ? Colors.white : Colors.black,
+                                       fontSize: 14,
+                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                     ),
+                                   ),
+                                 ),
+                               );
+                             },
+                           ),
+                         ),
+                         const SizedBox(height: 15),
+                       ],
+                       if ((selectedVariant?.description ?? widget.shirt.description).isNotEmpty) ...[
+                         Text(
+                           "- รายละเอียด",
+                           style: GoogleFonts.imprima(
+                             fontSize: 17,
+                             fontWeight: FontWeight.normal,
+                           ),
+                         ),
+                         const SizedBox(height: 5),
+                         Text(
+                           selectedVariant?.description ?? widget.shirt.description,
+                           style: GoogleFonts.imprima(
+                             fontSize: 16,
+                             color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
+                             height: 1.5,
+                           ),
+                         ),
+                       ],
+                       const SizedBox(height: 16),
+                       Row(
+                         children: [
+                           Hero(
+                             tag: widget.tagPrefix + (selectedVariant?.price ?? widget.shirt.price).toString(),
+                             child: AnimatedPrice(
+                               priceString: (selectedVariant?.price ?? widget.shirt.price).toString(),
+                             ),
+                           ),
+                           const Spacer(),
+                           FilledButton(
+                             onPressed: () async {
+                               ref.read(cartProvider.notifier).addItem(widget.shirt, selectedVariant: selectedVariant);
+                               showDialog(
+                                 context: context,
+                                 builder: (context) {
+                                   return const Padding(
+                                     padding: EdgeInsets.symmetric(horizontal: 16),
+                                     child: Center(
+                                       child: ShadDialog(
+                                         title: Text('Adding to Cart'),
+                                         child: ShadProgress(),
+                                       ),
+                                     ),
+                                   );
+                                 },
+                               );
+                               await Future.delayed(const Duration(seconds: 1));
+                               if (!context.mounted) return;
+                               Navigator.pop(context);
+                               ShadToaster.of(context).show(const ShadToast(
+                                 title: Text("เพิ่มสินค้า ใส่ตะกร้าเรียบร้อยแล้ว"),
+                                 duration: Duration(milliseconds: 1000),
+                               ));
+                               Navigator.pop(context);
+                             },
+                             style: FilledButton.styleFrom(
+                               backgroundColor: Colors.orange,
+                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                               shape: RoundedRectangleBorder(
+                                 borderRadius: BorderRadius.circular(30),
+                               ),
+                             ),
+                             child: Text(
+                               "Add To Cart",
+                               style: GoogleFonts.imprima(
+                                 color: Colors.white,
+                                 fontSize: 20,
+                                 fontWeight: FontWeight.w300,
+                               ),
+                             ),
+                           ),
+                         ],
+                       ),
+                     ],
+                   ),
+                 ),
+               ],
+             ),
+           ),
+         ));
   }
 }

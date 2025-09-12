@@ -176,14 +176,19 @@ class _CartState extends ConsumerState<Cart> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                        width: 1,
+                      ),
                     ),
                     child: Text(
                       "${selectedCartItem.quantity}",
                       style: GoogleFonts.imprima(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),

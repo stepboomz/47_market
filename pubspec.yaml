@@ -43,6 +43,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_animate: ^4.5.2
   shared_preferences: ^2.3.2
+  promptpay_qrcode_generate: ^1.0.2
 
 dev_dependencies:
   flutter_test:

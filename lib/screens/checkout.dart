@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
 
 class Checkout extends ConsumerStatefulWidget {
   const Checkout({super.key});
@@ -50,6 +50,171 @@ class _CheckoutState extends ConsumerState<Checkout> {
     phoneController.dispose();
     addressController.dispose();
     super.dispose();
+  }
+
+  void _showQRCodeModal(double totalAmount) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Text(
+                    "Pay with PromptPay",
+                    style: GoogleFonts.imprima(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Scan QR Code to make payment",
+                    style: GoogleFonts.imprima(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // QR Code
+            Expanded(
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: QRCodeGenerate(
+                    promptPayId: "0957728931", // You can change this to your PromptPay ID
+                    amount: totalAmount,
+                    width: 250,
+                    height: 250,
+                  ),
+                ),
+              ),
+            ),
+            // Amount display
+            // Container(
+            //   margin: const EdgeInsets.symmetric(horizontal: 20),
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     color: Colors.orange.withOpacity(0.1),
+            //     borderRadius: BorderRadius.circular(12),
+            //     border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            //   ),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     children: [
+            //       Text(
+            //         "Total Amount",
+            //         style: GoogleFonts.imprima(
+            //           fontSize: 18,
+            //           fontWeight: FontWeight.w500,
+            //         ),
+            //       ),
+            //       Text(
+            //         "฿${totalAmount.toStringAsFixed(0)}",
+            //         style: GoogleFonts.imprima(
+            //           fontSize: 24,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.orange,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+          
+          
+            // Buttons
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: Colors.grey[300]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        "Cancel",
+                        style: GoogleFonts.imprima(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Clear cart and navigate back to main
+                        ref.read(cartProvider.notifier).clearCart();
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        "Payment Complete",
+                        style: GoogleFonts.imprima(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -123,6 +288,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                             .colorScheme
                                             .inverseSurface,
                                         fontWeight: FontWeight.w600),
+                                        
                                   ),
                                   if (savedName != null && savedName!.isNotEmpty) ...[
                                     const SizedBox(height: 4),
@@ -136,6 +302,22 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                             .inverseSurface
                                             .withOpacity(0.8),
                                       ),
+                                        overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                    if (savedPhone != null && savedPhone!.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "Phone:$savedPhone",
+                                      style: GoogleFonts.imprima(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.normal,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .inverseSurface
+                                            .withOpacity(0.8),
+                                      ),
+                                        overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                    if (savedAddress != null && savedAddress!.isNotEmpty) ...[
@@ -150,22 +332,11 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                             .inverseSurface
                                             .withOpacity(0.8),
                                       ),
+                                      // maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
-                                  if (savedPhone != null && savedPhone!.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      "Phone: $savedPhone",
-                                      style: GoogleFonts.imprima(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.normal,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .inverseSurface
-                                            .withOpacity(0.8),
-                                      ),
-                                    ),
-                                  ],
+                                
                                  
                                 ],
                               ),
@@ -173,11 +344,16 @@ class _CheckoutState extends ConsumerState<Checkout> {
                           ],
                         ),
                       ),
+                      // const SizedBox(height: 16), // Add spacing before delivery time
                     ],
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
+                      // Load saved values into text fields
+                      nameController.text = savedName ?? '';
+                      phoneController.text = savedPhone ?? '';
+                      addressController.text = savedAddress ?? '';
                       setState(() {
                         showAddressForm = true;
                       });
@@ -261,7 +437,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                         setState(() {
                           showAddressForm = false;
                         });
-                        // ล้างข้อมูลใน text field (ไม่ลบที่บันทึกไว้)
+                        // Clear text fields (don't delete saved data)
                         nameController.clear();
                         phoneController.clear();
                         addressController.clear();
@@ -273,7 +449,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                         ),
                       ),
                       child: Text(
-                        "ยกเลิก",
+                        "Cancel",
                         style: GoogleFonts.imprima(
                           color: Colors.black,
                           fontSize: 16,
@@ -304,7 +480,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                         ),
                       ),
                       child: Text(
-                        "บันทึก",
+                        "Save",
                         style: GoogleFonts.imprima(
                           color: Colors.white,
                           fontSize: 16,
@@ -495,35 +671,16 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 ),
                 Center(
                   child: FilledButton(
-                    onPressed: () async {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: ShadDialog(
-                                title: Text("Processing Payment"),
-                                child: ShadProgress(),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                      await Future.delayed(const Duration(seconds: 1));
-                      ref.read(cartProvider.notifier).clearCart();
-                      if (!context.mounted) return;
-                      ShadToaster.of(context).show(
-                        const ShadToast(
-                          title: Text("Paymemt Successful"),
-                          duration: Duration(milliseconds: 1000),
-                        ),
-                      );
-                      // Navigator.of(context)
-                      //     .popUntil(ModalRoute.withName('/main'));
-                      // Navigator.of(context)
-                      //     .pushNamedAndRemoveUntil('/main', (route) => false);
-                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    onPressed: () {
+                      // Calculate total amount
+                      double totalAmount = 0;
+                      for (var item in cartItems) {
+                        totalAmount += (item.selectedVariant?.price ?? item.shirt.price) * item.quantity;
+                      }
+                      // Add delivery fee (assuming 0 for free delivery)
+                      totalAmount += 0;
+                      
+                      _showQRCodeModal(totalAmount);
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.orange,
