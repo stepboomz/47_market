@@ -53,7 +53,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         "tag": "cart",
         "label": "Cart"
       },
-      {"icon": Icons.favorite_rounded, "label": "Favorites"},
+      {
+        "icon": null,
+        "asset": "assets/icons/save.png",
+        "tag": "cart",
+        "label": "Favorites"
+      },
       {"icon": Icons.person_rounded, "label": "Profile"},
     ];
 

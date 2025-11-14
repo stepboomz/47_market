@@ -258,7 +258,7 @@ class _CartState extends ConsumerState<Cart> {
                   // รายการสินค้า
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                       itemCount: cartItems.length,
                       itemBuilder: (context, index) {
                         return _buildCartItem(cartItems[index]);
@@ -311,7 +311,7 @@ class _CartState extends ConsumerState<Cart> {
 
                   // Bill Details
                   Container(
-                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,

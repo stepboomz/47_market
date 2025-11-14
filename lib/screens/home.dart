@@ -68,12 +68,16 @@ class _HomeState extends ConsumerState<Home> {
         setState(() {
           categories = fetched;
           isCategoryLoading = false;
+          // Re-filter products based on active categories
+          selectedItems = _getFilteredProducts(selectedCategory);
         });
       } else {
         // Fallback to AppData (local JSON) if Supabase empty
         setState(() {
           categories = AppData.categories;
           isCategoryLoading = false;
+          // Re-filter products based on active categories
+          selectedItems = _getFilteredProducts(selectedCategory);
         });
       }
     } catch (e) {
@@ -81,6 +85,8 @@ class _HomeState extends ConsumerState<Home> {
       setState(() {
         categories = AppData.categories;
         isCategoryLoading = false;
+        // Re-filter products based on active categories
+        selectedItems = _getFilteredProducts(selectedCategory);
       });
     }
   }
@@ -88,28 +94,31 @@ class _HomeState extends ConsumerState<Home> {
   void _filterProductsByCategory(BrandType category) {
     setState(() {
       selectedCategory = category;
-
-      final isCategoryActive = _isCategoryActive(category);
-
-      if (!isCategoryActive && category != BrandType.all) {
-        // If category is inactive, show no products
-        selectedItems = [];
-      } else if (category == BrandType.all) {
-        // Show all products from active categories only
-        final activeCategories = categories
-            .where((cat) => cat.type != BrandType.all)
-            .map((cat) => cat.type.name)
-            .toList();
-        selectedItems = AppData.products
-            .where((product) => activeCategories.contains(product.category))
-            .toList();
-      } else {
-        // Show products only from the selected active category
-        selectedItems = AppData.products
-            .where((product) => product.category == category.name)
-            .toList();
-      }
+      selectedItems = _getFilteredProducts(category);
     });
+  }
+
+  List<ShirtModel> _getFilteredProducts(BrandType category) {
+    final isCategoryActive = _isCategoryActive(category);
+
+    if (!isCategoryActive && category != BrandType.all) {
+      // If category is inactive, show no products
+      return [];
+    } else if (category == BrandType.all) {
+      // Show all products from active categories only
+      final activeCategories = categories
+          .where((cat) => cat.type != BrandType.all)
+          .map((cat) => cat.type.name)
+          .toList();
+      return AppData.products
+          .where((product) => activeCategories.contains(product.category))
+          .toList();
+    } else {
+      // Show products only from the selected active category
+      return AppData.products
+          .where((product) => product.category == category.name)
+          .toList();
+    }
   }
 
   bool _isCategoryActive(BrandType type) {
@@ -230,7 +239,7 @@ class _HomeState extends ConsumerState<Home> {
                         // _buildHeadline(context),
                         // const SizedBox(height: 18),
                         _buildProductGrid(context),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 100),
                       ],
                     ),
                   ),
@@ -346,13 +355,13 @@ class _HomeState extends ConsumerState<Home> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+          //     blurRadius: 16,
+          //     offset: const Offset(0, 8),
+          //   ),
+          // ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -545,14 +554,14 @@ class _HomeState extends ConsumerState<Home> {
                       color:
                           isSelected ? Colors.red.shade400 : Colors.transparent,
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        if (isSelected)
-                          BoxShadow(
-                            color: Colors.red.shade400.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                      ],
+                      // boxShadow: [
+                      //   if (isSelected)
+                      //     BoxShadow(
+                      //       color: Colors.red.shade400.withOpacity(0.3),
+                      //       blurRadius: 12,
+                      //       offset: const Offset(0, 6),
+                      //     ),
+                      // ],
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

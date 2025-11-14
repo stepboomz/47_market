@@ -62,8 +62,24 @@ class _DetailsState extends ConsumerState<Details> {
                   const Spacer(),
                   _buildCircleIcon(
                     context,
-                    icon: Icons.shopping_bag_outlined,
-                    onTap: () => Navigator.pushNamed(context, '/cart'),
+                    assetIcon: 'assets/icons/save.png',
+                    color: isFavorite ? Colors.red.shade400 : null,
+                    onTap: () {
+                      ref
+                          .read(favoriteProvider.notifier)
+                          .toggleFavorite(widget.shirt);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isFavorite
+                                ? "ลบออกจากรายการโปรด"
+                                : "เพิ่มในรายการโปรด",
+                            style: GoogleFonts.imprima(),
+                          ),
+                          duration: const Duration(milliseconds: 800),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -307,15 +323,18 @@ class _DetailsState extends ConsumerState<Details> {
   }
 
   Widget _buildCircleIcon(BuildContext context,
-      {required IconData icon, required VoidCallback onTap}) {
+      {IconData? icon,
+      String? assetIcon,
+      required VoidCallback onTap,
+      Color? color}) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        width: 42,
-        height: 42,
+        width: 25,
+        height: 25,
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(18),
@@ -329,11 +348,19 @@ class _DetailsState extends ConsumerState<Details> {
             ),
           ],
         ),
-        child: Icon(
-          icon,
-          color: theme.colorScheme.onSurface,
-          size: 20,
-        ),
+        child: assetIcon != null
+            ? ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  color ?? theme.colorScheme.onSurface,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset(assetIcon, fit: BoxFit.scaleDown),
+              )
+            : Icon(
+                icon,
+                color: color ?? theme.colorScheme.onSurface,
+                size: 20,
+              ),
       ),
     );
   }
