@@ -468,7 +468,7 @@ class _HomeState extends ConsumerState<Home> {
   String _categoryEmoji(BrandType type) {
     switch (type) {
       case BrandType.all:
-        return "🍇";
+        return "🛍";
       case BrandType.readyMeals:
         return "🍱";
       case BrandType.ingredients:

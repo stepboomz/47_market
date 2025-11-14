@@ -2,9 +2,6 @@
 import 'package:brand_store_app/providers/theme_provider.dart';
 import 'package:brand_store_app/providers/favorite_provider.dart';
 import 'package:brand_store_app/providers/cart_provider.dart';
-import 'package:brand_store_app/screens/onboarding.dart';
-import 'package:brand_store_app/services/auth_service.dart';
-import 'package:brand_store_app/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -85,44 +82,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.inverseSurface,
-        elevation: 0,
-        forceMaterialTransparency: true,
-        // toolbarHeight: 100,
-        leadingWidth: 100,
-        primary: true,
-        // leading: IconButton(
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        //   icon: const ImageIcon(
-        //     size: 30,
-        //     AssetImage("assets/icons/back_arrow.png"),
-        //   ),
-        // ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const ImageIcon(
-              size: 40,
-              AssetImage("assets/icons/profile.png"),
-            ),
-          )
-        ],
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Theme.of(context).colorScheme.surface,
+      //   foregroundColor: Theme.of(context).colorScheme.inverseSurface,
+      //   elevation: 0,
+      //   forceMaterialTransparency: true,
+      //   // toolbarHeight: 100,
+      //   leadingWidth: 100,
+      //   primary: true,
+      //   // leading: IconButton(
+      //   //   onPressed: () {
+      //   //     Navigator.pop(context);
+      //   //   },
+      //   //   icon: const ImageIcon(
+      //   //     size: 30,
+      //   //     AssetImage("assets/icons/back_arrow.png"),
+      //   //   ),
+      //   // ),
+      //   actions: [
+      //     IconButton(
+      //       onPressed: () {},
+      //       icon: const ImageIcon(
+      //         size: 40,
+      //         AssetImage("assets/icons/profile.png"),
+      //       ),
+      //     )
+      //   ],
+      // ),
+     appBar: AppBar(
+        automaticallyImplyLeading: false,
+          foregroundColor: Theme.of(context).colorScheme.inverseSurface,
+          elevation: 0,
+          forceMaterialTransparency: true,
+          toolbarHeight: 100,
+          leadingWidth: 100,
+          primary: true,
+          centerTitle: true,
+          title: Text(
+            "Settings",
+            style: GoogleFonts.imprima(fontSize: 25),
+          ),
+          // leading: IconButton(
+          //   onPressed: () {
+          //     Navigator.pop(context);
+          //   },
+          //   icon: const ImageIcon(
+          //     size: 30,
+          //     AssetImage("assets/icons/back_arrow.png"),
+          //   ),
+          // ),
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Settings",
-              style: GoogleFonts.imprima(
-                  fontWeight: FontWeight.w500,
-                  fontSize: MediaQuery.textScalerOf(context).scale(40)),
-            ),
+            // Text(
+            //   "Settings",
+            //   style: GoogleFonts.imprima(
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: MediaQuery.textScalerOf(context).scale(40)),
+            // ),
             // Text(
             //   "Your Neighborhood, Your Market..",
             //   style: GoogleFonts.imprima(

@@ -237,6 +237,7 @@ class _CartState extends ConsumerState<Cart> {
       child: Scaffold(
         // backgroundColor: const Color(0xFFF8F8F8),
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           foregroundColor: Theme.of(context).colorScheme.inverseSurface,
           elevation: 0,
           forceMaterialTransparency: true,
