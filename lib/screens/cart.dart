@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 
 class Cart extends ConsumerStatefulWidget {
   const Cart({super.key});
@@ -17,72 +16,64 @@ class _CartState extends ConsumerState<Cart> {
   Widget _buildListItem(BuildContext context, CartItem selectedCartItem,
       int index, Animation<double>? animation) {
     final selectedShirt = selectedCartItem.shirt;
-    
-    Widget content = Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      // decoration: BoxDecoration(
-      //   color: Theme.of(context).colorScheme.surface,
-      //   borderRadius: BorderRadius.circular(16),
-      //   boxShadow: [
-      //     BoxShadow(
-      //       color: Colors.black.withOpacity(0.05),
-      //       blurRadius: 10,
-      //       offset: const Offset(0, 2),
-      //     ),
-      //   ],
-      // ),
-      child: Slidable(
-        endActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          extentRatio: 0.2,
-          children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    ref.read(cartProvider.notifier).removeItem(selectedShirt, selectedVariant: selectedCartItem.selectedVariant);
-                  },
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+    final variantPrice =
+        selectedCartItem.selectedVariant?.price ?? selectedShirt.price;
+    final hasDiscount = variantPrice != selectedShirt.price;
+    Widget content = Slidable(
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        extentRatio: 0.2,
+        children: [
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                onPressed: () {
+                  ref.read(cartProvider.notifier).removeItem(selectedShirt,
+                      selectedVariant: selectedCartItem.selectedVariant);
+                },
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
             ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // รูปสินค้า
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
                 child: (selectedShirt.networkImage == null ||
                         selectedShirt.networkImage! == false)
                     ? Image.asset(
                         selectedShirt.image,
-                        width: 80,
-                        height: 80,
                         fit: BoxFit.cover,
                       )
                     : Image.network(
-                        selectedShirt.image.replaceAll('/1.png', '/thumbnail.png'),
-                        width: 80,
-                        height: 80,
+                        selectedShirt.image
+                            .replaceAll('/1.png', '/thumbnail.png'),
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[200],
+                            color: Colors.grey.shade200,
                             child: const Center(
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
@@ -90,138 +81,114 @@ class _CartState extends ConsumerState<Cart> {
                         },
                       ),
               ),
-              const SizedBox(width: 16),
-              
-              // ข้อมูลสินค้า
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ชื่อสินค้า
-                    Text(
-                      selectedShirt.name,
-                      style: GoogleFonts.imprima(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    selectedShirt.name,
+                    style: GoogleFonts.imprima(
+                      fontSize: 16,
+                      // fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (selectedCartItem.selectedVariant != null) ...[
                     const SizedBox(height: 4),
-                    
-                    // Variant
-                    if (selectedCartItem.selectedVariant != null) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.orange.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          selectedCartItem.selectedVariant!.name,
-                          style: GoogleFonts.imprima(
-                            fontSize: 12,
-                            color: Colors.orange,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    
-                    // ราคา
                     Text(
-                      '฿${(selectedCartItem.selectedVariant?.price ?? selectedShirt.price).toStringAsFixed(0)}',
+                      selectedCartItem.selectedVariant!.name,
                       style: GoogleFonts.imprima(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
+                        fontSize: 13,
+                        color:
+                            Theme.of(context).colorScheme.inverseSurface.withOpacity(0.6),
                       ),
                     ),
                   ],
-                ),
-              ),
-              
-              // ปุ่มควบคุมจำนวน
-              Column(
-                children: [
-                  // ปุ่มเพิ่ม
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(cartProvider.notifier).addItem(selectedShirt, selectedVariant: selectedCartItem.selectedVariant);
-                    },
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.add,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 8),
-                  
-                  // จำนวน
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                        width: 1,
+                  Row(
+                    children: [
+                      Text(
+                        '฿${variantPrice.toStringAsFixed(2)}',
+                        style: GoogleFonts.imprima(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.inverseSurface,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      "${selectedCartItem.quantity}",
-                      style: GoogleFonts.imprima(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // ปุ่มลด
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(cartProvider.notifier).decrementItem(selectedShirt, selectedVariant: selectedCartItem.selectedVariant);
-                    },
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.remove,
-                        size: 18,
-                        color: Colors.black87,
-                      ),
-                    ),
+                      if (hasDiscount) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          '฿${selectedShirt.price.toStringAsFixed(2)}',
+                          style: GoogleFonts.imprima(
+                            fontSize: 14,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .inverseSurface
+                                .withOpacity(0.5),
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.2),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildQuantityButton(
+                    icon: Icons.remove,
+                    onTap: () {
+                      ref.read(cartProvider.notifier).decrementItem(selectedShirt,
+                          selectedVariant: selectedCartItem.selectedVariant);
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      "${selectedCartItem.quantity}",
+                      style: GoogleFonts.imprima(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  _buildQuantityButton(
+                    icon: Icons.add,
+                    onTap: () {
+                      ref.read(cartProvider.notifier).addItem(selectedShirt,
+                          selectedVariant: selectedCartItem.selectedVariant);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
-    
-    // ถ้ามี animation ให้ wrap ด้วย SlideTransition และ FadeTransition
+
     if (animation != null) {
       return SlideTransition(
         position: animation.drive(
@@ -236,9 +203,28 @@ class _CartState extends ConsumerState<Cart> {
         ),
       );
     }
-    
-    // ถ้าไม่มี animation ให้ return content ตรงๆ
+
     return content;
+  }
+
+  Widget _buildQuantityButton({required IconData icon, required VoidCallback onTap}) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: Colors.grey.shade700,
+        ),
+      ),
+    );
   }
 
   @override
@@ -249,6 +235,7 @@ class _CartState extends ConsumerState<Cart> {
         scrollbars: false,
       ),
       child: Scaffold(
+        // backgroundColor: const Color(0xFFF8F8F8),
         appBar: AppBar(
           foregroundColor: Theme.of(context).colorScheme.inverseSurface,
           elevation: 0,
@@ -261,15 +248,15 @@ class _CartState extends ConsumerState<Cart> {
             "Cart",
             style: GoogleFonts.imprima(fontSize: 25),
           ),
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const ImageIcon(
-              size: 30,
-              AssetImage("assets/icons/back_arrow.png"),
-            ),
-          ),
+          // leading: IconButton(
+          //   onPressed: () {
+          //     Navigator.pop(context);
+          //   },
+          //   icon: const ImageIcon(
+          //     size: 30,
+          //     AssetImage("assets/icons/back_arrow.png"),
+          //   ),
+          // ),
         ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,29 +297,34 @@ class _CartState extends ConsumerState<Cart> {
                           Icon(
                             Icons.shopping_cart_outlined,
                             size: 80,
-                            color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .inverseSurface
+                                .withOpacity(0.3),
                           ),
                           const SizedBox(height: 20),
                           Text(
                             "No items in cart",
                             style: GoogleFonts.imprima(
                               fontSize: 20,
-                              color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .inverseSurface
+                                  .withOpacity(0.7),
                             ),
                           ),
-                          // const SizedBox(height: 10),
-                          // Text(
-                          //   "เพิ่มสินค้าเพื่อเริ่มช้อปปิ้ง",
-                          //   style: GoogleFonts.imprima(
-                          //     fontSize: 14,
-                          //     color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5),
-                          //   ),
-                          // ),
                         ],
                       ),
                     )
-                  : ListView.builder(
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       itemCount: cartItems.length,
+                      separatorBuilder: (_, __) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Divider(
+                          color: Colors.grey.withOpacity(0.2),
+                        ),
+                      ),
                       itemBuilder: (context, index) {
                         final selectedCartItem = cartItems[index];
                         return _buildListItem(
@@ -340,11 +332,26 @@ class _CartState extends ConsumerState<Cart> {
                       },
                     ),
             ),
+            if (cartItems.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    foregroundColor: Colors.teal,
+                    textStyle: GoogleFonts.imprima(fontSize: 15),
+                    alignment: Alignment.centerLeft,
+                  ),
+                  onPressed: () {},
+                  icon: const Icon(Icons.local_offer_outlined, size: 20),
+                  label: const Text("Add promo code"),
+                ),
+              ),
             
             // สรุปราคา
             if (cartItems.isNotEmpty) ...[
               Container(
-                margin: const EdgeInsets.all(20),
+                margin: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,

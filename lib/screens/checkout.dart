@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
+import 'package:brand_store_app/services/supabase_service.dart';
 
 class Checkout extends ConsumerStatefulWidget {
   const Checkout({super.key});
@@ -185,11 +186,39 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.pop(context);
-                        // Clear cart and navigate back to main
+                        // Create order in Supabase then navigate to success page
+                        double totalAmount = 0;
+                        for (var item in ref.read(cartProvider)) {
+                          totalAmount += (item.selectedVariant?.price ?? item.shirt.price) * item.quantity;
+                        }
+                        final items = ref.read(cartProvider).map((it) => {
+                              'product_id': it.shirt.id,
+                              'variant_id': it.selectedVariant?.id,
+                              'name': it.selectedVariant?.name ?? it.shirt.name,
+                              'price': (it.selectedVariant?.price ?? it.shirt.price),
+                              'quantity': it.quantity,
+                            }).toList();
+
+                        final orderNumber = await SupabaseService.createOrder(
+                          customerName: savedName ?? '',
+                          customerPhone: savedPhone ?? '',
+                          customerAddress: savedAddress ?? '',
+                          totalAmount: totalAmount,
+                          items: items,
+                        );
+
                         ref.read(cartProvider.notifier).clearCart();
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        if (!mounted) return;
+                        if (orderNumber != null) {
+                          Navigator.pushReplacementNamed(context, '/order-success', arguments: {
+                            'orderNumber': orderNumber,
+                            'totalAmount': totalAmount,
+                          });
+                        } else {
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                        }
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.orange,

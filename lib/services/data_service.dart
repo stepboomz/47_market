@@ -1,51 +1,32 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:brand_store_app/models/category_model.dart';
 import 'package:brand_store_app/models/shirt_model.dart';
+import 'package:brand_store_app/services/supabase_service.dart';
 
 class DataService {
-  static const String _categoriesPath = 'assets/data/categories.json';
-  static const String _productsPath = 'assets/data/products.json';
-
-  // ดึงข้อมูลหมวดหมู่จาก JSON
+  // ดึงข้อมูลหมวดหมู่จาก Supabase
   static Future<List<BrandCategory>> getCategories() async {
-    try {
-      final String jsonString = await rootBundle.loadString(_categoriesPath);
-      final List<dynamic> jsonList = json.decode(jsonString);
-      
-      return jsonList.map((json) {
-        return BrandCategory.fromJson(json);
-      }).toList();
-    } catch (e) {
-      print('Error loading categories: $e');
+    final categories = await SupabaseService.getCategories();
+    if (categories.isEmpty) {
       return _getDefaultCategories();
     }
+    return categories;
   }
 
-  // ดึงข้อมูลสินค้าจาก JSON
+  // ดึงข้อมูลสินค้าจาก Supabase
   static Future<List<ShirtModel>> getProducts() async {
-    try {
-      final String jsonString = await rootBundle.loadString(_productsPath);
-      final List<dynamic> jsonList = json.decode(jsonString);
-      
-      return jsonList.map((json) {
-        return ShirtModel.fromJson(json);
-      }).toList();
-    } catch (e) {
-      print('Error loading products: $e');
+    final products = await SupabaseService.getProducts();
+    if (products.isEmpty) {
       return _getDefaultProducts();
     }
+    return products;
   }
 
-  // ดึงข้อมูลสินค้าตามหมวดหมู่
+  // ดึงข้อมูลสินค้าตามหมวดหมู่จาก Supabase โดยตรง
   static Future<List<ShirtModel>> getProductsByCategory(String categoryId) async {
-    final List<ShirtModel> allProducts = await getProducts();
-    
     if (categoryId == 'all') {
-      return allProducts;
+      return getProducts();
     }
-    
-    return allProducts.where((product) => product.category == categoryId).toList();
+    return SupabaseService.getProducts(categoryId: categoryId);
   }
 
   // ข้อมูลหมวดหมู่เริ่มต้น (fallback)

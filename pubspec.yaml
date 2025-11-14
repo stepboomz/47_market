@@ -44,6 +44,8 @@ dependencies:
   flutter_animate: ^4.5.2
   shared_preferences: ^2.3.2
   promptpay_qrcode_generate: ^1.0.2
+  supabase_flutter: ^2.5.6
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -94,7 +96,6 @@ flutter:
     - assets/icons/
     - assets/images/shirts/
     - assets/images/payment/
-    - assets/data/
     - assets/images/readyMeals/
     - assets/images/ingredients/
     - assets/images/snacks/

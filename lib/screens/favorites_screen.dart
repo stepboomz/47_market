@@ -25,15 +25,15 @@ class FavoritesScreen extends ConsumerWidget {
           "Favorite ",
           style: GoogleFonts.imprima(fontSize: 25),
         ),
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const ImageIcon(
-            size: 30,
-            AssetImage("assets/icons/back_arrow.png"),
-          ),
-        ),
+        // leading: IconButton(
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        //   icon: const ImageIcon(
+        //     size: 30,
+        //     AssetImage("assets/icons/back_arrow.png"),
+        //   ),
+        // ),
       ),
       body: favorites.isEmpty
           ? Padding(

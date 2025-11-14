@@ -12,14 +12,26 @@ import 'package:brand_store_app/screens/favorites_screen.dart';
 import 'package:brand_store_app/screens/main_screen.dart';
 import 'package:brand_store_app/screens/onboarding.dart';
 import 'package:brand_store_app/screens/settings_screen.dart';
+import 'package:brand_store_app/screens/admin_screen.dart';
+import 'package:brand_store_app/screens/order_success.dart';
+import 'package:brand_store_app/config/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // โหลดข้อมูลจาก JSON
+  
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+  );
+  
+  // โหลดข้อมูลจาก JSON (จะใช้เป็น fallback)
   await AppData.loadAllData();
+  
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -40,6 +52,14 @@ class MyApp extends ConsumerWidget {
           brightness: Brightness.dark),
       routes: {
         '/main': (context) => const MainScreen(),
+        '/admin': (context) => const AdminScreen(),
+        '/order-success': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return OrderSuccessScreen(
+            orderNumber: args['orderNumber'],
+            totalAmount: args['totalAmount'],
+          );
+        },
         '/cart': (context) => const Cart(),
         '/settings': (context) => const SettingsScreen(),
         'checkout': (context) => const Checkout(),

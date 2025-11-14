@@ -90,18 +90,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         foregroundColor: Theme.of(context).colorScheme.inverseSurface,
         elevation: 0,
         forceMaterialTransparency: true,
-        toolbarHeight: 100,
+        // toolbarHeight: 100,
         leadingWidth: 100,
         primary: true,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const ImageIcon(
-            size: 30,
-            AssetImage("assets/icons/back_arrow.png"),
-          ),
-        ),
+        // leading: IconButton(
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        //   icon: const ImageIcon(
+        //     size: 30,
+        //     AssetImage("assets/icons/back_arrow.png"),
+        //   ),
+        // ),
         actions: [
           IconButton(
             onPressed: () {},
@@ -123,17 +123,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   fontWeight: FontWeight.w500,
                   fontSize: MediaQuery.textScalerOf(context).scale(40)),
             ),
-            Text(
-              "Your Neighborhood, Your Market..",
-              style: GoogleFonts.imprima(
-                fontWeight: FontWeight.w300,
-                color: Theme.of(context)
-                    .colorScheme
-                    .inverseSurface
-                    .withOpacity(0.7),
-                fontSize: MediaQuery.textScalerOf(context).scale(15),
-              ),
-            ),
+            // Text(
+            //   "Your Neighborhood, Your Market..",
+            //   style: GoogleFonts.imprima(
+            //     fontWeight: FontWeight.w300,
+            //     color: Theme.of(context)
+            //         .colorScheme
+            //         .inverseSurface
+            //         .withOpacity(0.7),
+            //     fontSize: MediaQuery.textScalerOf(context).scale(15),
+            //   ),
+            // ),
             Column(
               children: [
                 const SizedBox(
