@@ -93,7 +93,7 @@ class OrderSuccessScreen extends StatelessWidget {
                         // "Order placed" text
                         Text(
                           'Order placed',
-                          style: GoogleFonts.imprima(
+                          style: GoogleFonts.chakraPetch(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -105,7 +105,7 @@ class OrderSuccessScreen extends StatelessWidget {
                         Text(
                           'Your order #$orderNumber was placed with success.\nYou can see the status of the order at any time.',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.imprima(
+                          style: GoogleFonts.chakraPetch(
                             fontSize: 14,
                             color: Colors.grey[600],
                             height: 1.6,
@@ -129,7 +129,7 @@ class OrderSuccessScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Date',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 12,
                                     color: Colors.grey[500],
                                     fontWeight: FontWeight.w500,
@@ -138,7 +138,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   '${DateTime.now().day}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().year}',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
@@ -151,7 +151,7 @@ class OrderSuccessScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Order',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 12,
                                     color: Colors.grey[500],
                                     fontWeight: FontWeight.w500,
@@ -160,7 +160,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   '#$orderNumber',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
@@ -181,7 +181,7 @@ class OrderSuccessScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Shipping To',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 12,
                                     color: Colors.grey[500],
                                     fontWeight: FontWeight.w500,
@@ -190,7 +190,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   'Your Address',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
@@ -203,7 +203,7 @@ class OrderSuccessScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Payment',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 12,
                                     color: Colors.grey[500],
                                     fontWeight: FontWeight.w500,
@@ -212,7 +212,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   'Prompt Pay',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
@@ -258,7 +258,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 child: Text(
                                   '║ ║ ║║ ║ ║║ ║ ║║ ║ ║║ ║ ║║ ║ ║║ ║ ║',
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 24,
                                     letterSpacing: 2,
                                     color: Colors.black,
@@ -269,7 +269,7 @@ class OrderSuccessScreen extends StatelessWidget {
                               const SizedBox(height: 8),
                               Text(
                                 orderNumber,
-                                style: GoogleFonts.imprima(
+                                style: GoogleFonts.chakraPetch(
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                   letterSpacing: 1,
@@ -297,7 +297,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'Close',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 16,
                                     color: Colors.grey[700],
                                     fontWeight: FontWeight.w500,
@@ -320,7 +320,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'Track Order',
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 16,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,

@@ -24,7 +24,7 @@ class _DetailsState extends ConsumerState<Details> {
   @override
   void initState() {
     super.initState();
-    // ถ้ามี variants ให้เลือกตัวแรกเป็น default
+    // ถ้าม�?variants ให้เลือกตัวแรกเป็�?default
     if (widget.shirt.variants.isNotEmpty) {
       selectedVariant = widget.shirt.variants.first;
     }
@@ -74,7 +74,7 @@ class _DetailsState extends ConsumerState<Details> {
                             isFavorite
                                 ? "ลบออกจากรายการโปรด"
                                 : "เพิ่มในรายการโปรด",
-                            style: GoogleFonts.imprima(),
+                            style: GoogleFonts.chakraPetch(),
                           ),
                           duration: const Duration(milliseconds: 800),
                         ),
@@ -114,7 +114,7 @@ class _DetailsState extends ConsumerState<Details> {
               const SizedBox(height: 28),
               Text(
                 selectedVariant?.name ?? widget.shirt.name,
-                style: GoogleFonts.imprima(
+                style: GoogleFonts.chakraPetch(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,
                 ),
@@ -124,7 +124,7 @@ class _DetailsState extends ConsumerState<Details> {
                 widget.shirt.description.isNotEmpty
                     ? widget.shirt.description.split('\n').first
                     : "Each (500g - 700g)",
-                style: GoogleFonts.imprima(
+                style: GoogleFonts.chakraPetch(
                   fontSize: 15,
                   color: theme.colorScheme.onSurface.withOpacity(0.7),
                 ),
@@ -135,7 +135,7 @@ class _DetailsState extends ConsumerState<Details> {
                         .isNotEmpty
                     ? selectedVariant?.description ?? widget.shirt.description
                     : "The orange is the fruit of various citrus species in the family Rutaceae. Sweet oranges are a natural mutation.",
-                style: GoogleFonts.imprima(
+                style: GoogleFonts.chakraPetch(
                   fontSize: 15,
                   height: 1.5,
                   color: theme.colorScheme.onSurface.withOpacity(0.7),
@@ -173,14 +173,14 @@ class _DetailsState extends ConsumerState<Details> {
               //         children: [
               //           Text(
               //             "Delivery Time",
-              //             style: GoogleFonts.imprima(
+              //             style: GoogleFonts.chakraPetch(
               //               fontSize: 15,
               //               fontWeight: FontWeight.w600,
               //             ),
               //           ),
               //           Text(
               //             "10 - 15 Min",
-              //             style: GoogleFonts.imprima(
+              //             style: GoogleFonts.chakraPetch(
               //               fontSize: 13,
               //               color: theme.colorScheme.onSurface.withOpacity(0.6),
               //             ),
@@ -240,7 +240,7 @@ class _DetailsState extends ConsumerState<Details> {
                           ),
                           child: Text(
                             variant.name,
-                            style: GoogleFonts.imprima(
+                            style: GoogleFonts.chakraPetch(
                               fontSize: 14,
                               color: isSelected
                                   ? theme.colorScheme.onPrimary
@@ -261,8 +261,8 @@ class _DetailsState extends ConsumerState<Details> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "฿${(selectedVariant?.price ?? widget.shirt.price).toStringAsFixed(2)}",
-                        style: GoogleFonts.imprima(
+                        "${(selectedVariant?.price ?? widget.shirt.price).toStringAsFixed(2)}",
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onBackground,
@@ -270,7 +270,7 @@ class _DetailsState extends ConsumerState<Details> {
                       ),
                       Text(
                         "per pack",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 13,
                           color: theme.colorScheme.onSurface.withOpacity(0.5),
                         ),
@@ -307,7 +307,7 @@ class _DetailsState extends ConsumerState<Details> {
                   ),
                   child: Text(
                     "Add to cart",
-                    style: GoogleFonts.imprima(
+                    style: GoogleFonts.chakraPetch(
                       fontSize: 18,
                       color: theme.colorScheme.onPrimary,
                       fontWeight: FontWeight.w600,
@@ -391,7 +391,7 @@ class _DetailsState extends ConsumerState<Details> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               quantity.toString().padLeft(2, '0'),
-              style: GoogleFonts.imprima(
+              style: GoogleFonts.chakraPetch(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),

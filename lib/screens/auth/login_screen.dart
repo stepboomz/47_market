@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.all(20.0),
                     child: Text(
                       'Sign Into Your Account',
-                      style: GoogleFonts.raleway(
+                      style: GoogleFonts.chakraPetch(
                         color: Colors.white,
                         fontSize: MediaQuery.textScalerOf(context).scale(36),
                         fontWeight: FontWeight.bold,

@@ -24,7 +24,7 @@ class FavoritesScreen extends ConsumerWidget {
         centerTitle: true,
         title: Text(
           "Favorite ",
-          style: GoogleFonts.imprima(fontSize: 25),
+          style: GoogleFonts.chakraPetch(fontSize: 25),
         ),
         // leading: IconButton(
         //   onPressed: () {

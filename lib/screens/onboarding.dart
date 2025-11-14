@@ -56,7 +56,7 @@ class Onboarding extends ConsumerWidget {
                     const Spacer(),
                     Text(
                       "Find The\nBest Collections",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                           height: 1.2,
                           color: Theme.of(context).colorScheme.inverseSurface,
                           fontWeight: FontWeight.bold,
@@ -67,7 +67,7 @@ class Onboarding extends ConsumerWidget {
                     ),
                     Text(
                       "Get your dream item easily with FashionHub\nand get other interesting offer",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                           fontSize: MediaQuery.textScalerOf(context).scale(12),
                           fontWeight: FontWeight.w300,
                           color: Theme.of(context)
@@ -98,7 +98,7 @@ class Onboarding extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(vertical: 20),
                               child: Text(
                                 "Sign Up",
-                                style: GoogleFonts.imprima(
+                                style: GoogleFonts.chakraPetch(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .inverseSurface),
@@ -126,7 +126,7 @@ class Onboarding extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(vertical: 20),
                               child: Text(
                                 "Sign In",
-                                style: GoogleFonts.imprima(color: Colors.white),
+                                style: GoogleFonts.chakraPetch(color: Colors.white),
                               ),
                             ),
                           ),

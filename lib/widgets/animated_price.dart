@@ -18,7 +18,7 @@ class AnimatedPrice extends StatelessWidget {
         return Text(
           '฿${value.toStringAsFixed(0)}',
           // Format the value to 2 decimal places
-          style: GoogleFonts.imprima(
+          style: GoogleFonts.chakraPetch(
               fontSize: MediaQuery.textScalerOf(context).scale(30),
               fontWeight: FontWeight.bold),
         );

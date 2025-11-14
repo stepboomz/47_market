@@ -128,7 +128,7 @@ class ItemsGridview extends ConsumerWidget {
             tag: tagPrefix + selectedShirt.price.toString(),
             child: Text(
               "฿${selectedShirt.price.toStringAsFixed(0)}",
-              style: GoogleFonts.imprima(
+              style: GoogleFonts.chakraPetch(
                   fontSize: MediaQuery.textScalerOf(context).scale(20),
                   fontWeight: FontWeight.bold),
             ),
@@ -137,7 +137,7 @@ class ItemsGridview extends ConsumerWidget {
             tag: tagPrefix + selectedShirt.name,
             child: Text(
               selectedShirt.name,
-              style: GoogleFonts.imprima(
+              style: GoogleFonts.chakraPetch(
                 fontSize: MediaQuery.textScalerOf(context).scale(14),
                 color: Theme.of(context).colorScheme.inverseSurface,
               ),

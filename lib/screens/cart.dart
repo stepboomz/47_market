@@ -62,7 +62,7 @@ class _CartState extends ConsumerState<Cart> {
               children: [
                 Text(
                   selectedShirt.name,
-                  style: GoogleFonts.imprima(
+                  style: GoogleFonts.chakraPetch(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: theme.colorScheme.onSurface,
@@ -74,7 +74,7 @@ class _CartState extends ConsumerState<Cart> {
                   const SizedBox(height: 2),
                   Text(
                     cartItem.selectedVariant!.name,
-                    style: GoogleFonts.imprima(
+                    style: GoogleFonts.chakraPetch(
                       fontSize: 12,
                       color: theme.colorScheme.onSurface.withOpacity(0.5),
                     ),
@@ -83,7 +83,7 @@ class _CartState extends ConsumerState<Cart> {
                 const SizedBox(height: 4),
                 Text(
                   '฿${variantPrice.toStringAsFixed(0)}',
-                  style: GoogleFonts.imprima(
+                  style: GoogleFonts.chakraPetch(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.onSurface,
@@ -111,7 +111,7 @@ class _CartState extends ConsumerState<Cart> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
                       '${cartItem.quantity}',
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.onSurface,
@@ -143,7 +143,7 @@ class _CartState extends ConsumerState<Cart> {
                     color: theme.colorScheme.onSurface.withOpacity(0.5)),
                 label: Text(
                   'Delete',
-                  style: GoogleFonts.imprima(
+                  style: GoogleFonts.chakraPetch(
                     fontSize: 13,
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
                   ),
@@ -216,7 +216,7 @@ class _CartState extends ConsumerState<Cart> {
                     const SizedBox(height: 20),
                     Text(
                       "No items in cart",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         fontSize: 20,
                         color: theme.colorScheme.onSurface.withOpacity(0.5),
                       ),
@@ -234,7 +234,7 @@ class _CartState extends ConsumerState<Cart> {
                       children: [
                         Text(
                           '${cartItems.length} Items',
-                          style: GoogleFonts.imprima(
+                          style: GoogleFonts.chakraPetch(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onSurface,
@@ -248,7 +248,7 @@ class _CartState extends ConsumerState<Cart> {
                           label: const Text('Add More'),
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.red.shade400,
-                            textStyle: GoogleFonts.imprima(fontSize: 16),
+                            textStyle: GoogleFonts.chakraPetch(fontSize: 16),
                           ),
                         ),
                       ],
@@ -295,7 +295,7 @@ class _CartState extends ConsumerState<Cart> {
                         const SizedBox(width: 12),
                         Text(
                           'Apply Promo Code',
-                          style: GoogleFonts.imprima(
+                          style: GoogleFonts.chakraPetch(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: theme.colorScheme.onSurface,
@@ -322,7 +322,7 @@ class _CartState extends ConsumerState<Cart> {
                       children: [
                         Text(
                           'Bill Details',
-                          style: GoogleFonts.imprima(
+                          style: GoogleFonts.chakraPetch(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onSurface,
@@ -345,7 +345,7 @@ class _CartState extends ConsumerState<Cart> {
                           children: [
                             Text(
                               'Subtotal',
-                              style: GoogleFonts.imprima(
+                              style: GoogleFonts.chakraPetch(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.onSurface,
@@ -353,7 +353,7 @@ class _CartState extends ConsumerState<Cart> {
                             ),
                             Text(
                               '฿${subtotal.toStringAsFixed(0)}',
-                              style: GoogleFonts.imprima(
+                              style: GoogleFonts.chakraPetch(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.onSurface,
@@ -381,7 +381,7 @@ class _CartState extends ConsumerState<Cart> {
                             ),
                             child: Text(
                               'Proceed To Pay · ฿${subtotal.toStringAsFixed(0)}',
-                              style: GoogleFonts.imprima(
+                              style: GoogleFonts.chakraPetch(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -403,14 +403,14 @@ class _CartState extends ConsumerState<Cart> {
       children: [
         Text(
           label,
-          style: GoogleFonts.imprima(
+          style: GoogleFonts.chakraPetch(
             fontSize: 14,
             color: theme.colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
         Text(
           value,
-          style: GoogleFonts.imprima(
+          style: GoogleFonts.chakraPetch(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: theme.colorScheme.onSurface,

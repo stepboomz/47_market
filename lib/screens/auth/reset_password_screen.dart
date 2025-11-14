@@ -111,7 +111,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: Center(
                   child: Text(
                     'Reset Password',
-                    style: GoogleFonts.raleway(
+                    style: GoogleFonts.chakraPetch(
                       color: Colors.white,
                       fontSize: MediaQuery.textScalerOf(context).scale(36),
                       fontWeight: FontWeight.bold,

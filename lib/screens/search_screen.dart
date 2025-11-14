@@ -143,13 +143,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           children: [
                             Text(
                               "Search",
-                              style: GoogleFonts.imprima(
+                              style: GoogleFonts.chakraPetch(
                                   fontWeight: FontWeight.w500,
                                   fontSize: MediaQuery.textScalerOf(context).scale(40)),
                             ),
                             Text(
                               "Your Neighborhood, Your Market..",
-                              style: GoogleFonts.imprima(
+                              style: GoogleFonts.chakraPetch(
                                 fontWeight: FontWeight.w300,
                                 color: Theme.of(context)
                                     .colorScheme
@@ -187,7 +187,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             ? Center(
                                 child: Text(
                                   "ไม่พบสินค้าที่ค้นหา",
-                                  style: GoogleFonts.imprima(
+                                  style: GoogleFonts.chakraPetch(
                                     fontSize: 20,
                                     color: Theme.of(context)
                                         .colorScheme

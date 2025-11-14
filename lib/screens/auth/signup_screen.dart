@@ -90,7 +90,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     padding: const EdgeInsets.all(20.0),
                     child: Text(
                       'Create a New Account',
-                      style: GoogleFonts.raleway(
+                      style: GoogleFonts.chakraPetch(
                         color: Colors.white,
                         fontSize: MediaQuery.textScalerOf(context).scale(36),
                         fontWeight: FontWeight.bold,

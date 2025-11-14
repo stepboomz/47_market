@@ -9,15 +9,15 @@ class BrandCategory {
   String get displayName {
     switch (type) {
       case BrandType.all:
-        return '🛍️ All';
+        return '🛍️ ทั้งหมด';
       case BrandType.readyMeals:
-        return '🍱 ReadyMeals';
+        return '🍱 ของกิน';
       case BrandType.ingredients:
         return '🥬 วัตถุดิบ';
       case BrandType.snacks:
-        return '🍿 Snacks';
+        return '🍿 ขนม';
       case BrandType.beverages:
-        return '🥤 Beverages';
+        return '🥤 เครื่องดิ่ม';
       case BrandType.seasonings:
         return '🧂 เครื่องปรุงส';
     }

@@ -30,9 +30,9 @@ class _HomeState extends ConsumerState<Home> {
   ];
   final _cardAccentColorsDark = const [
     Color(0xFF2B2B3A),
-    Color(0xFF1F2A36),
-    Color(0xFF2F2622),
-    Color(0xFF1F2F2A),
+    Color(0xFF2B2B3A),
+    Color(0xFF2B2B3A),
+    Color(0xFF2B2B3A),
   ];
 
   @override
@@ -255,7 +255,7 @@ class _HomeState extends ConsumerState<Home> {
       children: [
         Text(
           "47 Market",
-          style: GoogleFonts.imprima(
+          style: GoogleFonts.chakraPetch(
             fontSize: MediaQuery.textScalerOf(context).scale(32),
             fontWeight: FontWeight.w600,
           ),
@@ -263,7 +263,7 @@ class _HomeState extends ConsumerState<Home> {
         const SizedBox(height: 4),
         Text(
           "Your neighborhood, your market",
-          style: GoogleFonts.imprima(
+          style: GoogleFonts.chakraPetch(
             color:
                 Theme.of(context).colorScheme.inverseSurface.withOpacity(0.6),
             fontSize: MediaQuery.textScalerOf(context).scale(15),
@@ -278,7 +278,7 @@ class _HomeState extends ConsumerState<Home> {
     final isDark = theme.brightness == Brightness.dark;
 
     // Get first 5 products as deal items
-    final dealItems = AppData.products.take(2).toList();
+    final dealItems = AppData.products.skip(1).take(2).toList();
 
     if (dealItems.isEmpty) {
       return const SizedBox.shrink();
@@ -375,7 +375,7 @@ class _HomeState extends ConsumerState<Home> {
                   children: [
                     Text(
                       "Top deal!",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         fontSize: 13,
                         color: Colors.red.shade400,
                         fontWeight: FontWeight.w500,
@@ -384,9 +384,9 @@ class _HomeState extends ConsumerState<Home> {
                     const SizedBox(height: 6),
                     Text(
                       product.name.toUpperCase(),
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.normal,
                         color: theme.colorScheme.onSurface,
                       ),
                       maxLines: 2,
@@ -395,7 +395,7 @@ class _HomeState extends ConsumerState<Home> {
                     const SizedBox(height: 10),
                     Text(
                       "UP TO 15% OFF",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         fontSize: 12,
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontWeight: FontWeight.w500,
@@ -411,7 +411,7 @@ class _HomeState extends ConsumerState<Home> {
                       ),
                       child: Text(
                         "Shop Now",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 13,
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -462,7 +462,7 @@ class _HomeState extends ConsumerState<Home> {
       children: [
         Text(
           title,
-          style: GoogleFonts.imprima(
+          style: GoogleFonts.chakraPetch(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -476,7 +476,7 @@ class _HomeState extends ConsumerState<Home> {
           ),
           child: Text(
             actionLabel,
-            style: GoogleFonts.imprima(
+            style: GoogleFonts.chakraPetch(
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -500,7 +500,7 @@ class _HomeState extends ConsumerState<Home> {
               itemBuilder: (context, index) {
                 final dynamic rawCategory = categories[index];
 
-                // Normalize category shape — support BrandCategory or Map from Supabase
+                // Normalize category shape �?support BrandCategory or Map from Supabase
                 BrandCategory? categoryModel;
                 String disp = '';
                 BrandType catType = BrandType.all;
@@ -587,7 +587,7 @@ class _HomeState extends ConsumerState<Home> {
                               const SizedBox(height: 8),
                               Text(
                                 label,
-                                style: GoogleFonts.imprima(
+                                style: GoogleFonts.chakraPetch(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: isSelected
@@ -619,7 +619,7 @@ class _HomeState extends ConsumerState<Home> {
         child: Center(
           child: Text(
             "No products to show",
-            style: GoogleFonts.imprima(
+            style: GoogleFonts.chakraPetch(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
@@ -706,7 +706,7 @@ class _HomeState extends ConsumerState<Home> {
                 product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.imprima(
+                style: GoogleFonts.chakraPetch(
                   fontSize: 16,
                   // fontWeight: FontWeight.w600,
                 ),
@@ -718,15 +718,15 @@ class _HomeState extends ConsumerState<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '฿${product.price.toStringAsFixed(2)}',
-                        style: GoogleFonts.imprima(
+                        '${product.price.toStringAsFixed(2)}',
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         "per pack",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 12,
                           color: Theme.of(context)
                               .colorScheme

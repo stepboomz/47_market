@@ -90,7 +90,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 children: [
                   Text(
                     "Pay with PromptPay",
-                    style: GoogleFonts.imprima(
+                    style: GoogleFonts.chakraPetch(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -98,7 +98,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   const SizedBox(height: 8),
                   Text(
                     "Scan QR Code to make payment",
-                    style: GoogleFonts.imprima(
+                    style: GoogleFonts.chakraPetch(
                       fontSize: 16,
                       color: Colors.grey[600],
                     ),
@@ -146,14 +146,14 @@ class _CheckoutState extends ConsumerState<Checkout> {
             //     children: [
             //       Text(
             //         "Total Amount",
-            //         style: GoogleFonts.imprima(
+            //         style: GoogleFonts.chakraPetch(
             //           fontSize: 18,
             //           fontWeight: FontWeight.w500,
             //         ),
             //       ),
             //       Text(
-            //         "฿${totalAmount.toStringAsFixed(0)}",
-            //         style: GoogleFonts.imprima(
+            //         "�?{totalAmount.toStringAsFixed(0)}",
+            //         style: GoogleFonts.chakraPetch(
             //           fontSize: 24,
             //           fontWeight: FontWeight.bold,
             //           color: Colors.orange,
@@ -180,7 +180,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       ),
                       child: Text(
                         "Cancel",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 16,
                           color: Colors.grey[600],
                         ),
@@ -265,7 +265,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       ),
                       child: Text(
                         "Payment Complete",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 16,
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -295,7 +295,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
         leadingWidth: 100,
         primary: true,
         centerTitle: true,
-        title: Text("Checkout", style: GoogleFonts.imprima(fontSize: 25)),
+        title: Text("Checkout", style: GoogleFonts.chakraPetch(fontSize: 25)),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -314,7 +314,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
           children: [
             Text(
               "Delivery Address",
-              style: GoogleFonts.imprima(
+              style: GoogleFonts.chakraPetch(
                   fontSize: 12,
                   color: Theme.of(context)
                       .colorScheme
@@ -347,7 +347,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                   Text(
                                     "Siri Place Phaholyothin 52 ",
                                     softWrap: true,
-                                    style: GoogleFonts.imprima(
+                                    style: GoogleFonts.chakraPetch(
                                         fontSize: 14,
                                         color: Theme.of(context)
                                             .colorScheme
@@ -359,7 +359,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                     const SizedBox(height: 4),
                                     Text(
                                       "Name: $savedName",
-                                      style: GoogleFonts.imprima(
+                                      style: GoogleFonts.chakraPetch(
                                         fontSize: 15,
                                         fontWeight: FontWeight.normal,
                                         color: Theme.of(context)
@@ -375,7 +375,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                     const SizedBox(height: 2),
                                     Text(
                                       "Phone:$savedPhone",
-                                      style: GoogleFonts.imprima(
+                                      style: GoogleFonts.chakraPetch(
                                         fontSize: 15,
                                         fontWeight: FontWeight.normal,
                                         color: Theme.of(context)
@@ -391,7 +391,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                     const SizedBox(height: 2),
                                     Text(
                                       "Address: $savedAddress",
-                                      style: GoogleFonts.imprima(
+                                      style: GoogleFonts.chakraPetch(
                                         fontSize: 15,
                                         fontWeight: FontWeight.normal,
                                         color: Theme.of(context)
@@ -424,7 +424,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       });
                     },
                     child: Text("Change",
-                        style: GoogleFonts.imprima(fontSize: 15)),
+                        style: GoogleFonts.chakraPetch(fontSize: 15)),
                   ),
                 ],
               ),
@@ -516,7 +516,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       ),
                       child: Text(
                         "Cancel",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           color: Colors.black,
                           fontSize: 16,
                         ),
@@ -547,7 +547,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       ),
                       child: Text(
                         "Save",
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           color: Colors.white,
                           fontSize: 16,
                         ),
@@ -570,8 +570,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   width: 10,
                 ),
                 Text(
-                  "Delivered in 15–20 minutes",
-                  style: GoogleFonts.imprima(
+                  "Delivered in 15-20 minutes",
+                  style: GoogleFonts.chakraPetch(
                     fontSize: 15,
                   ),
                 ),
@@ -582,7 +582,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
             ),
             Text(
               "Payment Method",
-              style: GoogleFonts.imprima(
+              style: GoogleFonts.chakraPetch(
                   fontSize: 12,
                   color: Theme.of(context)
                       .colorScheme
@@ -607,7 +607,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
             // Center(
             //   child: Text(
             //     "Add Voucher",
-            //     style: GoogleFonts.imprima(
+            //     style: GoogleFonts.chakraPetch(
             //       fontSize: 15,
             //       color: Theme.of(context)
             //           .colorScheme
@@ -622,7 +622,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
             Text.rich(
               TextSpan(
                 text: "Note : ",
-                style: GoogleFonts.imprima(
+                style: GoogleFonts.chakraPetch(
                   fontSize: 15,
                   color: Colors.red,
                   fontWeight: FontWeight.w300,
@@ -631,7 +631,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   TextSpan(
                     text:
                         "Don’t forget to fill in your name, phone number, and house address in the village",
-                    style: GoogleFonts.imprima(
+                    style: GoogleFonts.chakraPetch(
                       fontSize: 15,
                       color: Theme.of(context)
                           .colorScheme
@@ -642,7 +642,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   ),
                   // TextSpan(
                   //   text: "#154619",
-                  //   style: GoogleFonts.imprima(
+                  //   style: GoogleFonts.chakraPetch(
                   //     fontSize: 15,
                   //     fontWeight: FontWeight.w300,
                   //   ),
@@ -650,7 +650,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   // TextSpan(
                   //   text:
                   //       " if you forget to put your order id we can’t confirm the payment.",
-                  //   style: GoogleFonts.imprima(
+                  //   style: GoogleFonts.chakraPetch(
                   //     fontSize: 15,
                   //     color: Theme.of(context)
                   //         .colorScheme
@@ -670,7 +670,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   children: [
                     Text(
                       "Total Items (${cartItems.length})",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         color: Theme.of(context)
                             .colorScheme
                             .inverseSurface
@@ -680,8 +680,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     ),
                     const Spacer(),
                     Text(
-                      '฿${(ref.watch(cartProvider.notifier).totalCost).toStringAsFixed(0)}',
-                      style: GoogleFonts.imprima(
+                      '${(ref.watch(cartProvider.notifier).totalCost).toStringAsFixed(0)}',
+                      style: GoogleFonts.chakraPetch(
                           fontSize: 20, fontWeight: FontWeight.bold),
                     )
                   ],
@@ -693,7 +693,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   children: [
                     Text(
                       "Standard Delivery",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         color: Theme.of(context)
                             .colorScheme
                             .inverseSurface
@@ -704,7 +704,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     const Spacer(),
                     Text(
                       'Free',
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                           fontSize: 20, fontWeight: FontWeight.bold),
                     )
                   ],
@@ -716,7 +716,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   children: [
                     Text(
                       "Total Payment",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         color: Theme.of(context)
                             .colorScheme
                             .inverseSurface
@@ -726,8 +726,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     ),
                     const Spacer(),
                     Text(
-                      '฿${(ref.watch(cartProvider.notifier).totalCost + 0).toStringAsFixed(0)}',
-                      style: GoogleFonts.imprima(
+                      '${(ref.watch(cartProvider.notifier).totalCost + 0).toStringAsFixed(0)}',
+                      style: GoogleFonts.chakraPetch(
                           fontSize: 20, fontWeight: FontWeight.bold),
                     )
                   ],
@@ -760,7 +760,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     ),
                     child: Text(
                       "Check Out",
-                      style: GoogleFonts.imprima(
+                      style: GoogleFonts.chakraPetch(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w500,

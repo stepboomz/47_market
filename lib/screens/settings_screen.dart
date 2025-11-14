@@ -23,11 +23,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: Text(
             'Clear Cache',
             style:
-                GoogleFonts.imprima(fontSize: 20, fontWeight: FontWeight.bold),
+                GoogleFonts.chakraPetch(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           content: Text(
             'This will clear all stored data including:\n• Cart items\n• Favorite items\n• Theme settings\n• Checkout information\n\nThis action cannot be undone.',
-            style: GoogleFonts.imprima(fontSize: 16),
+            style: GoogleFonts.chakraPetch(fontSize: 16),
           ),
           actions: [
             TextButton(
@@ -35,7 +35,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Text(
                 'Cancel',
                 style:
-                    GoogleFonts.imprima(fontSize: 16, color: Colors.grey[600]),
+                    GoogleFonts.chakraPetch(fontSize: 16, color: Colors.grey[600]),
               ),
             ),
             TextButton(
@@ -53,7 +53,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
               child: Text(
                 'Clear',
-                style: GoogleFonts.imprima(fontSize: 16, color: Colors.red),
+                style: GoogleFonts.chakraPetch(fontSize: 16, color: Colors.red),
               ),
             ),
           ],
@@ -120,7 +120,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         centerTitle: true,
         title: Text(
           "Settings",
-          style: GoogleFonts.imprima(fontSize: 25),
+          style: GoogleFonts.chakraPetch(fontSize: 25),
         ),
         // leading: IconButton(
         //   onPressed: () {
@@ -139,13 +139,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             // Text(
             //   "Settings",
-            //   style: GoogleFonts.imprima(
+            //   style: GoogleFonts.chakraPetch(
             //       fontWeight: FontWeight.w500,
             //       fontSize: MediaQuery.textScalerOf(context).scale(40)),
             // ),
             // Text(
             //   "Your Neighborhood, Your Market..",
-            //   style: GoogleFonts.imprima(
+            //   style: GoogleFonts.chakraPetch(
             //     fontWeight: FontWeight.w300,
             //     color: Theme.of(context)
             //         .colorScheme
@@ -161,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 ListTile(
                   title: Text('Dark Theme',
-                      style: GoogleFonts.imprima(fontSize: 18)),
+                      style: GoogleFonts.chakraPetch(fontSize: 18)),
                   trailing: ShadSwitch(
                     value: ref.watch(themeModeProvider) == ThemeMode.dark,
                     onChanged: (value) {
@@ -173,13 +173,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(),
                 ListTile(
                   title: Text('Favorite',
-                      style: GoogleFonts.imprima(fontSize: 18)),
+                      style: GoogleFonts.chakraPetch(fontSize: 18)),
                   trailing: Consumer(
                     builder: (context, ref, child) {
                       final favorites = ref.watch(favoriteProvider);
                       return Text(
                         '${favorites.length} Item',
-                        style: GoogleFonts.imprima(
+                        style: GoogleFonts.chakraPetch(
                           fontSize: 14,
                           color: Theme.of(context)
                               .colorScheme
@@ -195,10 +195,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(),
                 ListTile(
+                  leading: const Icon(Icons.login),
+                  title: Text('Login',
+                      style: GoogleFonts.chakraPetch(fontSize: 18)),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                ),
+                const Divider(),
+                ListTile(
                   title: Text('Clear Cache',
-                      style: GoogleFonts.imprima(fontSize: 18)),
+                      style: GoogleFonts.chakraPetch(fontSize: 18)),
                   subtitle: Text('Clear all stored data',
-                      style: GoogleFonts.imprima(fontSize: 14)),
+                      style: GoogleFonts.chakraPetch(fontSize: 14)),
                   trailing: const Icon(Icons.delete_outline),
                   onTap: () {
                     _showClearCacheDialog(context);
@@ -207,7 +216,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(),
                 // ListTile(
                 //   title:
-                //       Text('Logout', style: GoogleFonts.imprima(fontSize: 18)),
+                //       Text('Logout', style: GoogleFonts.chakraPetch(fontSize: 18)),
                 //   onTap: () async {
                 //     if (mounted) {
                 //       showDialog(
