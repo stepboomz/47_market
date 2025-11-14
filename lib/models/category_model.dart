@@ -3,21 +3,21 @@ enum BrandType { all, readyMeals, ingredients, snacks, beverages, seasonings }
 class BrandCategory {
   final BrandType type;
   bool isSelected;
-  
+
   BrandCategory(this.type, this.isSelected);
 
   String get displayName {
     switch (type) {
       case BrandType.all:
-        return '🛍️ ทั้งหมด';
+        return '🛍️ All';
       case BrandType.readyMeals:
-        return '🍱 อาหารสำเร็จรูป';
+        return '🍱 ReadyMeals';
       case BrandType.ingredients:
         return '🥬 วัตถุดิบ';
       case BrandType.snacks:
-        return '🍿 ขนม';
+        return '🍿 Snacks';
       case BrandType.beverages:
-        return '🥤 เครื่องดื่ม';
+        return '🥤 Beverages';
       case BrandType.seasonings:
         return '🧂 เครื่องปรุงส';
     }
@@ -48,7 +48,7 @@ class BrandCategory {
       default:
         type = BrandType.all;
     }
-    
+
     return BrandCategory(type, json['isSelected'] ?? false);
   }
 

@@ -88,14 +88,37 @@ class _HomeState extends ConsumerState<Home> {
   void _filterProductsByCategory(BrandType category) {
     setState(() {
       selectedCategory = category;
-      if (category == BrandType.all) {
-        selectedItems = AppData.products;
+      
+      final isCategoryActive = _isCategoryActive(category);
+      
+      if (!isCategoryActive && category != BrandType.all) {
+        // If category is inactive, show no products
+        selectedItems = [];
+      } else if (category == BrandType.all) {
+        // Show all products from active categories only
+        final activeCategories = categories
+            .where((cat) => cat.type != BrandType.all)
+            .map((cat) => cat.type.name)
+            .toList();
+        selectedItems = AppData.products
+            .where((product) => activeCategories.contains(product.category))
+            .toList();
       } else {
+        // Show products only from the selected active category
         selectedItems = AppData.products
             .where((product) => product.category == category.name)
             .toList();
       }
     });
+  }
+
+  bool _isCategoryActive(BrandType type) {
+    try {
+      categories.firstWhere((c) => c.type == type);
+      return true; // If found in the fetched list, it's active (we filter by is_active=true in service)
+    } catch (e) {
+      return type == BrandType.all; // Only "all" is always active
+    }
   }
 
   // ignore: unused_element
@@ -478,7 +501,11 @@ class _HomeState extends ConsumerState<Home> {
                   disp = categoryModel.displayName;
                   catType = categoryModel.type;
                 } else if (rawCategory is Map<String, dynamic>) {
-                  disp = (rawCategory['display_name'] ?? rawCategory['name'] ?? rawCategory['id'] ?? '').toString();
+                  disp = (rawCategory['display_name'] ??
+                          rawCategory['name'] ??
+                          rawCategory['id'] ??
+                          '')
+                      .toString();
                   // try to map id to BrandType
                   final id = (rawCategory['id'] ?? 'all').toString();
                   switch (id) {

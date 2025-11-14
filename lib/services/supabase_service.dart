@@ -10,9 +10,11 @@ class SupabaseService {
   // Categories
   static Future<List<BrandCategory>> getCategories() async {
     try {
+      // Only fetch categories that are active (is_active = true)
       final response = await _client
           .from('categories')
           .select()
+          .eq('is_active', true)
           .order('order_index', ascending: true)
           .order('id');
       final categories = response.map<BrandCategory>((json) {

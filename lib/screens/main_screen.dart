@@ -14,9 +14,6 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  static const double _navBarHeight = 72;
-  static const double _navBarBottomPadding = 24;
-  static const double _navBarHorizontalPadding = 16;
   int selectedIndex = 0;
 
   @override
@@ -25,20 +22,24 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       primary: true,
       backgroundColor: Colors.transparent,
       extendBody: true,
-      body: IndexedStack(
-        index: selectedIndex,
-        children: const [
-          Home(),
-          Cart(),
-          FavoritesScreen(),
-          SettingsScreen(),
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: selectedIndex,
+            children: const [
+              Home(),
+              Cart(),
+              FavoritesScreen(),
+              SettingsScreen(),
+            ],
+          ),
+          _buildFloatingBottomNav(context),
         ],
       ),
-      bottomNavigationBar: _buildCurvedBottomBar(context),
     );
   }
 
-  Widget _buildCurvedBottomBar(BuildContext context) {
+  Widget _buildFloatingBottomNav(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final backgroundColor =
@@ -49,22 +50,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       {
         "icon": null,
         "asset": "assets/icons/bag.png",
-        "label": "Cart",
-        "tag": "cart"
+        "tag": "cart",
+        "label": "Cart"
       },
       {"icon": Icons.favorite_rounded, "label": "Favorites"},
       {"icon": Icons.person_rounded, "label": "Profile"},
     ];
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        _navBarHorizontalPadding,
-        0,
-        _navBarHorizontalPadding,
-        _navBarBottomPadding,
-      ),
+    return Positioned(
+      bottom: 6,
+      left: 16,
+      right: 16,
       child: Container(
-        height: _navBarHeight,
+        height: 72,
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(36),
@@ -141,6 +139,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                               style: TextStyle(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
+                                fontSize: 12,
                               ),
                             ),
                           ),
