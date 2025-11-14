@@ -1,6 +1,8 @@
 import 'package:brand_store_app/providers/theme_provider.dart';
 import 'package:brand_store_app/providers/favorite_provider.dart';
 import 'package:brand_store_app/providers/cart_provider.dart';
+import 'package:brand_store_app/services/auth_service.dart';
+import 'package:brand_store_app/screens/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -194,12 +196,104 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   },
                 ),
                 const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.login),
-                  title: Text('Login',
-                      style: GoogleFonts.chakraPetch(fontSize: 18)),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/login');
+                Consumer(
+                  builder: (context, ref, child) {
+                    final isLoggedIn = AuthService().isLoggedIn;
+                    return ListTile(
+                      leading: Icon(isLoggedIn ? Icons.logout : Icons.login),
+                      title: Text(isLoggedIn ? 'Logout' : 'Login',
+                          style: GoogleFonts.chakraPetch(fontSize: 18)),
+                      onTap: () async {
+                        if (isLoggedIn) {
+                          // Show confirmation dialog for logout
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(
+                                  'Logout',
+                                  style: GoogleFonts.chakraPetch(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                content: Text(
+                                  'Are you sure you want to logout?',
+                                  style: GoogleFonts.chakraPetch(fontSize: 16),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: Text(
+                                      'Cancel',
+                                      style: GoogleFonts.chakraPetch(
+                                          fontSize: 16,
+                                          color: Colors.grey[600]),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.of(context).pop();
+
+                                      // Show loading indicator
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+
+                                      try {
+                                        await AuthService().signOut();
+
+                                        if (mounted) {
+                                          Navigator.pop(
+                                              context); // Remove loading indicator
+
+                                          // Navigate to onboarding screen
+                                          Navigator.pushAndRemoveUntil(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const Onboarding(),
+                                            ),
+                                            (route) => false,
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (mounted) {
+                                          Navigator.pop(
+                                              context); // Remove loading indicator
+
+                                          // Show error message
+                                          ShadToaster.of(context).show(
+                                            ShadToast(
+                                              title: Text('Logout Failed'),
+                                              description: Text(e.toString()),
+                                              duration: const Duration(
+                                                  milliseconds: 3000),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    child: Text(
+                                      'Logout',
+                                      style: GoogleFonts.chakraPetch(
+                                          fontSize: 16, color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          // Navigate to login screen
+                          Navigator.pushNamed(context, '/login');
+                        }
+                      },
+                    );
                   },
                 ),
                 const Divider(),

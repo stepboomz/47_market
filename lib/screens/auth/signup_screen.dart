@@ -22,23 +22,47 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await AuthService().signUp(
+        final createdUserId = await AuthService().signUp(
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
 
-        // Log the user in automatically after sign-up
-        await AuthService().signIn(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
-        );
-
-        if (mounted) {
-          // Navigate to HomeScreen after successful sign-up and login
-          Navigator.pushReplacementNamed(
-            context,
-            '/main',
+        if (createdUserId != null) {
+          // User was created successfully, now sign in
+          await AuthService().signIn(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
           );
+
+          if (mounted) {
+            // Navigate to HomeScreen after successful sign-up and login
+            Navigator.pushReplacementNamed(
+              context,
+              '/main',
+            );
+          }
+        } else {
+          // This should not happen with our updated auth service, but handle it just in case
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return ShadDialog(
+                  gap: 10,
+                  title: const Text('Registration Error'),
+                  description: const Text(
+                    'Failed to create account. Please try again.',
+                  ),
+                  actions: [
+                    ShadButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
         }
       } catch (e) {
         if (mounted) {

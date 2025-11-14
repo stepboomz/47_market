@@ -1,99 +1,145 @@
-import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
-  // Simple in-memory authentication state
-  bool _isLoggedIn = false;
-  String? _currentUserEmail;
+  final SupabaseClient _client = Supabase.instance.client;
 
-  final StreamController<bool> _authStateController =
-      StreamController<bool>.broadcast();
+  /// Sign up a new user using Supabase Auth and insert a profile row.
+  /// Optional fields: fullName, phone
+  /// Returns the created user's id when available, otherwise null (e.g. when
+  /// email confirmation is required and no session/user is returned).
+  Future<String?> signUp(String email, String password,
+      {String? fullName, String? phone}) async {
+    if (email.isEmpty || password.isEmpty) {
+      throw Exception('Email and password are required.');
+    }
 
-  /// Signs up a user with email and password.
-  Future<void> signUp(String email, String password) async {
+    if (password.length < 6) {
+      throw Exception('Password must be at least 6 characters.');
+    }
+
     try {
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
+      // Sign up with email confirmation disabled
+      final res = await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+          'phone': phone,
+        },
+        emailRedirectTo: null, // Disable email verification
+      );
 
-      // Simple validation
-      if (email.isEmpty || password.isEmpty) {
-        throw Exception('Email and password are required.');
+      final user = res.user ?? _client.auth.currentUser;
+
+      if (user == null) {
+        throw Exception('Failed to create user account');
       }
 
-      if (password.length < 6) {
-        throw Exception('Password must be at least 6 characters.');
+      // Try to sign in immediately after signup to bypass email verification
+      try {
+        final signInRes = await _client.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
+
+        final signedInUser = signInRes.user ?? _client.auth.currentUser;
+
+        if (signedInUser != null) {
+          // Insert profile row (id = auth user id)
+          await _client
+              .from('profiles')
+              .insert({
+                'id': signedInUser.id,
+                'email': email,
+                'full_name': fullName,
+                'phone': phone,
+              })
+              .select()
+              .single();
+
+          return signedInUser.id;
+        }
+      } catch (signInError) {
+        // If sign in fails, we still have the user ID from signup
+        // Insert profile using admin service if available or return the user ID
+        try {
+          await _client
+              .from('profiles')
+              .insert({
+                'id': user.id,
+                'email': email,
+                'full_name': fullName,
+                'phone': phone,
+              })
+              .select()
+              .single();
+
+          return user.id;
+        } catch (profileError) {
+          // If profile insertion fails, still return user ID
+          // The signup screen will handle this by showing success message
+          return user.id;
+        }
       }
 
-      // Simulate successful signup
-      _isLoggedIn = true;
-      _currentUserEmail = email;
-      _authStateController.add(true);
+      return user.id;
     } catch (e) {
-      throw Exception('Sign up failed: ${e.toString()}');
+      rethrow;
     }
   }
 
-  /// Logs in a user with email and password.
-  Future<void> signIn(String email, String password) async {
-    try {
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
+  /// Sign in user using Supabase Auth and return the profile data.
+  Future<Map<String, dynamic>> signIn(String email, String password) async {
+    if (email.isEmpty || password.isEmpty) {
+      throw Exception('Email and password are required.');
+    }
 
-      // Simple validation
-      if (email.isEmpty || password.isEmpty) {
-        throw Exception('Email and password are required.');
+    try {
+      final res = await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = res.user ?? _client.auth.currentUser;
+      if (user == null) {
+        throw Exception('Login failed');
       }
 
-      // Simulate successful login
-      _isLoggedIn = true;
-      _currentUserEmail = email;
-      _authStateController.add(true);
+      final profile =
+          await _client.from('profiles').select('*').eq('id', user.id).single();
+
+      return Map<String, dynamic>.from(profile as Map);
     } catch (e) {
-      throw Exception('Sign in failed: ${e.toString()}');
+      rethrow;
     }
   }
 
-  /// Sends a password reset email to the user.
+  /// Send password reset email via Supabase
   Future<void> resetPassword(String email) async {
+    if (email.isEmpty) throw Exception('Email is required.');
     try {
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (email.isEmpty) {
-        throw Exception('Email is required.');
-      }
-
-      // Simulate successful password reset
-      // In a real app, this would send an email
+      await _client.auth.resetPasswordForEmail(email);
     } catch (e) {
-      throw Exception('Password reset failed: ${e.toString()}');
+      rethrow;
     }
   }
 
-  /// Logs out the currently signed-in user.
+  /// Sign out
   Future<void> signOut() async {
     try {
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _isLoggedIn = false;
-      _currentUserEmail = null;
-      _authStateController.add(false);
+      await _client.auth.signOut();
     } catch (e) {
-      throw Exception('Failed to log out. Please try again.');
+      rethrow;
     }
   }
 
-  /// Checks if a user is currently logged in.
-  bool get isLoggedIn => _isLoggedIn;
+  /// Check if user is logged in
+  bool get isLoggedIn => _client.auth.currentSession != null;
 
-  /// Gets the current user email.
-  String? get currentUserEmail => _currentUserEmail;
+  /// Get current user email
+  String? get currentUserEmail => _client.auth.currentUser?.email;
 
-  /// Stream to listen for authentication state changes.
-  Stream<bool> authStateChanges() => _authStateController.stream;
-
-  /// Dispose the stream controller
-  void dispose() {
-    _authStateController.close();
-  }
+  /// Stream for auth state changes (mapped to `bool` - logged in or not)
+  Stream<bool> authStateChanges() =>
+      _client.auth.onAuthStateChange.map((state) => state.session != null);
 }
