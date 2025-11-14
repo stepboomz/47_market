@@ -126,7 +126,8 @@ class Onboarding extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(vertical: 20),
                               child: Text(
                                 "Sign In",
-                                style: GoogleFonts.chakraPetch(color: Colors.white),
+                                style: GoogleFonts.chakraPetch(
+                                    color: Colors.white),
                               ),
                             ),
                           ),

@@ -50,17 +50,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     } else {
       setState(() {
         selectedItems = allItems
-            .where((item) => item.name.toLowerCase().contains(query.toLowerCase()))
+            .where(
+                (item) => item.name.toLowerCase().contains(query.toLowerCase()))
             .toList();
       });
     }
   }
 
-
   Widget _buildCartIconWithBadge() {
     final cartItems = ref.watch(cartProvider);
     final totalQuantity = cartItems.fold(0, (sum, item) => sum + item.quantity);
-    
+
     return Stack(
       children: [
         const ImageIcon(
@@ -111,23 +111,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           toolbarHeight: 100,
           leadingWidth: 100,
           primary: true,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/settings');
-          },
-          icon: const ImageIcon(
-            size: 30,
-            AssetImage("assets/icons/menu.png"),
-          ),
-        ),
-        actions: [
-          IconButton(
+          leading: IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, "/cart");
+              Navigator.pushNamed(context, '/settings');
             },
-            icon: _buildCartIconWithBadge(),
-          )
-        ],
+            icon: const ImageIcon(
+              size: 30,
+              AssetImage("assets/icons/menu.png"),
+            ),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.pushNamed(context, "/cart");
+              },
+              icon: _buildCartIconWithBadge(),
+            )
+          ],
         ),
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -145,7 +145,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               "Search",
                               style: GoogleFonts.chakraPetch(
                                   fontWeight: FontWeight.w500,
-                                  fontSize: MediaQuery.textScalerOf(context).scale(40)),
+                                  fontSize: MediaQuery.textScalerOf(context)
+                                      .scale(40)),
                             ),
                             Text(
                               "Your Neighborhood, Your Market..",
@@ -155,7 +156,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                     .colorScheme
                                     .inverseSurface
                                     .withOpacity(0.7),
-                                fontSize: MediaQuery.textScalerOf(context).scale(15),
+                                fontSize:
+                                    MediaQuery.textScalerOf(context).scale(15),
                               ),
                             ),
                             const SizedBox(
@@ -172,7 +174,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 filled: true,
-                                fillColor: Theme.of(context).colorScheme.surface,
+                                fillColor:
+                                    Theme.of(context).colorScheme.surface,
                               ),
                             ),
                             // const Spacer()
@@ -182,7 +185,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   Expanded(
                       flex: 6,
                       child: Padding(
-                          padding: const EdgeInsets.only(right: 20.0,left: 20.0),
+                        padding: const EdgeInsets.only(right: 20.0, left: 20.0),
                         child: selectedItems.isEmpty
                             ? Center(
                                 child: Text(
@@ -197,9 +200,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 ),
                               )
                             : ItemsGridview(
-                                selectedItems: selectedItems, 
-                                tagPrefix: "search"
-                              ),
+                                selectedItems: selectedItems,
+                                tagPrefix: "search"),
                       )),
                 ],
               ),

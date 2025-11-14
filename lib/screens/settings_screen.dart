@@ -22,8 +22,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return AlertDialog(
           title: Text(
             'Clear Cache',
-            style:
-                GoogleFonts.chakraPetch(fontSize: 20, fontWeight: FontWeight.bold),
+            style: GoogleFonts.chakraPetch(
+                fontSize: 20, fontWeight: FontWeight.bold),
           ),
           content: Text(
             'This will clear all stored data including:\n• Cart items\n• Favorite items\n• Theme settings\n• Checkout information\n\nThis action cannot be undone.',
@@ -34,8 +34,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style:
-                    GoogleFonts.chakraPetch(fontSize: 16, color: Colors.grey[600]),
+                style: GoogleFonts.chakraPetch(
+                    fontSize: 16, color: Colors.grey[600]),
               ),
             ),
             TextButton(

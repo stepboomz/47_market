@@ -103,8 +103,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 decoration: const BoxDecoration(
                   color: Colors.black,
                   image: DecorationImage(
-                    image: AssetImage(
-                        "assets/images/auth-background.jpg"),
+                    image: AssetImage("assets/images/auth-background.jpg"),
                     fit: BoxFit.cover,
                   ),
                 ),
