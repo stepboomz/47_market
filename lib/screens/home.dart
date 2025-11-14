@@ -2,6 +2,7 @@ import 'package:brand_store_app/models/category_model.dart';
 import 'package:brand_store_app/models/shirt_model.dart';
 import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:brand_store_app/resources/app_data.dart';
+import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -17,7 +18,9 @@ class Home extends ConsumerStatefulWidget {
 class _HomeState extends ConsumerState<Home> {
   BrandType selectedCategory = BrandType.all;
   List<ShirtModel> selectedItems = [];
+  List<BrandCategory> categories = [];
   bool isLoading = true;
+  bool isCategoryLoading = true;
   int _currentCarouselIndex = 0;
   final _cardAccentColors = const [
     Color(0xFFFFF1F5),
@@ -36,6 +39,7 @@ class _HomeState extends ConsumerState<Home> {
   void initState() {
     super.initState();
     _loadData();
+    _loadCategories();
   }
 
   Future<void> _loadData() async {
@@ -53,6 +57,34 @@ class _HomeState extends ConsumerState<Home> {
     }
   }
 
+  Future<void> _loadCategories() async {
+    setState(() {
+      isCategoryLoading = true;
+    });
+
+    try {
+      final fetched = await SupabaseService.getCategories();
+      if (fetched.isNotEmpty) {
+        setState(() {
+          categories = fetched;
+          isCategoryLoading = false;
+        });
+      } else {
+        // Fallback to AppData (local JSON) if Supabase empty
+        setState(() {
+          categories = AppData.categories;
+          isCategoryLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading categories from Supabase: $e');
+      setState(() {
+        categories = AppData.categories;
+        isCategoryLoading = false;
+      });
+    }
+  }
+
   void _filterProductsByCategory(BrandType category) {
     setState(() {
       selectedCategory = category;
@@ -66,6 +98,7 @@ class _HomeState extends ConsumerState<Home> {
     });
   }
 
+  // ignore: unused_element
   Widget _buildCartIconWithBadge() {
     final cartItems = ref.watch(cartProvider);
     final totalQuantity = cartItems.fold(0, (sum, item) => sum + item.quantity);
@@ -284,8 +317,8 @@ class _HomeState extends ConsumerState<Home> {
           borderRadius: BorderRadius.circular(24),
           gradient: LinearGradient(
             colors: [
-              isDark ? Colors.grey.shade800 : const Color(0xFFFFF8E7),
-              isDark ? Colors.grey.shade700 : const Color(0xFFFFF5E1),
+              isDark ? Colors.grey.shade800 : Colors.white,
+              isDark ? Colors.grey.shade700 : Colors.white
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -424,62 +457,122 @@ class _HomeState extends ConsumerState<Home> {
   Widget _buildCategoryList(BuildContext context) {
     return SizedBox(
       height: 90,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: AppData.categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final category = AppData.categories[index];
-          final isSelected = category.type == selectedCategory;
+      child: isCategoryLoading
+          ? const Center(
+              child: SizedBox(
+                  height: 24, width: 24, child: CircularProgressIndicator()))
+          : ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final dynamic rawCategory = categories[index];
 
-          return GestureDetector(
-            onTap: () => _filterProductsByCategory(category.type),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              width: 110,
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.red.shade400 : Colors.transparent,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  if (isSelected)
-                    BoxShadow(
-                      color: Colors.red.shade400.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                // Normalize category shape — support BrandCategory or Map from Supabase
+                BrandCategory? categoryModel;
+                String disp = '';
+                BrandType catType = BrandType.all;
+
+                if (rawCategory is BrandCategory) {
+                  categoryModel = rawCategory;
+                  disp = categoryModel.displayName;
+                  catType = categoryModel.type;
+                } else if (rawCategory is Map<String, dynamic>) {
+                  disp = (rawCategory['display_name'] ?? rawCategory['name'] ?? rawCategory['id'] ?? '').toString();
+                  // try to map id to BrandType
+                  final id = (rawCategory['id'] ?? 'all').toString();
+                  switch (id) {
+                    case 'readyMeals':
+                      catType = BrandType.readyMeals;
+                      break;
+                    case 'ingredients':
+                      catType = BrandType.ingredients;
+                      break;
+                    case 'snacks':
+                      catType = BrandType.snacks;
+                      break;
+                    case 'beverages':
+                      catType = BrandType.beverages;
+                      break;
+                    case 'seasonings':
+                      catType = BrandType.seasonings;
+                      break;
+                    case 'all':
+                    default:
+                      catType = BrandType.all;
+                  }
+                } else if (rawCategory != null) {
+                  disp = rawCategory.toString();
+                }
+
+                final isSelected = catType == selectedCategory;
+
+                return GestureDetector(
+                  onTap: () => _filterProductsByCategory(catType),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
+                    width: 110,
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected ? Colors.red.shade400 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: Colors.red.shade400.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                      ],
                     ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _categoryEmoji(category.type),
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _categoryLabel(category.type),
-                    style: GoogleFonts.imprima(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? Colors.white
-                          : Theme.of(context)
-                              .colorScheme
-                              .inverseSurface
-                              .withOpacity(0.6),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Display emoji + label parsed from `disp` safely
+                        Builder(builder: (ctx) {
+                          final splitIndex = disp.indexOf(' ');
+                          final emoji = splitIndex > 0
+                              ? disp.substring(0, splitIndex)
+                              : (disp.isNotEmpty ? disp.substring(0, 1) : '');
+                          final label = splitIndex > 0
+                              ? disp.substring(splitIndex + 1)
+                              : (disp.length > 1 ? disp.substring(1) : '');
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                emoji,
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                label,
+                                style: GoogleFonts.imprima(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .inverseSurface
+                                          .withOpacity(0.6),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          );
+                        }),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -635,37 +728,5 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 
-  String _categoryEmoji(BrandType type) {
-    switch (type) {
-      case BrandType.all:
-        return "🛍";
-      case BrandType.readyMeals:
-        return "🍱";
-      case BrandType.ingredients:
-        return "🥬";
-      case BrandType.snacks:
-        return "🍪";
-      case BrandType.beverages:
-        return "🥤";
-      case BrandType.seasonings:
-        return "🧂";
-    }
-  }
-
-  String _categoryLabel(BrandType type) {
-    switch (type) {
-      case BrandType.all:
-        return "All";
-      case BrandType.readyMeals:
-        return "Prepared";
-      case BrandType.ingredients:
-        return "Ingredients";
-      case BrandType.snacks:
-        return "Snacks";
-      case BrandType.beverages:
-        return "Drinks";
-      case BrandType.seasonings:
-        return "Seasonings";
-    }
-  }
+  // removed hardcoded emoji/label mapping; categories come from Supabase/BrandCategory
 }
