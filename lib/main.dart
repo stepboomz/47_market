@@ -17,6 +17,7 @@ import 'package:brand_store_app/screens/order_success.dart';
 import 'package:brand_store_app/config/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -28,6 +29,10 @@ void main() async {
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
+  await GoogleFonts.pendingFonts([
+    GoogleFonts.chakraPetch(),
+    GoogleFonts.notoSansThai(), // Add Thai font support
+  ]);
 
   // โหลดข้อมูลจาก JSON (จะใช้เป็น fallback)
   await AppData.loadAllData();
