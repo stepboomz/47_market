@@ -29,10 +29,10 @@ void main() async {
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
-  await GoogleFonts.pendingFonts([
-    GoogleFonts.chakraPetch(),
-    GoogleFonts.notoSansThai(), // Add Thai font support
-  ]);
+  // await GoogleFonts.pendingFonts([
+  //   GoogleFonts.chakraPetch(),
+  //   GoogleFonts.notoSansThai(), // Add Thai font support
+  // ]);
 
   // โหลดข้อมูลจาก JSON (จะใช้เป็น fallback)
   await AppData.loadAllData();
