@@ -102,8 +102,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: Row(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Stack(
                         clipBehavior: Clip.none,
@@ -135,19 +136,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         ],
                       ),
                       if (isSelected) ...[
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              navItems[index]["label"] as String,
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          navItems[index]["label"] as String,
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ],
