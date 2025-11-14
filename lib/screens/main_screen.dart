@@ -58,7 +58,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     ];
 
     return Positioned(
-      bottom: 6,
+      bottom: 10,
       left: 16,
       right: 16,
       child: Container(

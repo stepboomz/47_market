@@ -88,9 +88,9 @@ class _HomeState extends ConsumerState<Home> {
   void _filterProductsByCategory(BrandType category) {
     setState(() {
       selectedCategory = category;
-      
+
       final isCategoryActive = _isCategoryActive(category);
-      
+
       if (!isCategoryActive && category != BrandType.all) {
         // If category is inactive, show no products
         selectedItems = [];
