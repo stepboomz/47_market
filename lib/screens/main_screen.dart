@@ -40,26 +40,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Widget _buildFloatingBottomNav(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? const Color(0xFF1F1F2B) : theme.colorScheme.surface;
-
     final navItems = [
-      {"icon": Icons.home_rounded, "label": "Home"},
+      {"icon": Icons.home_outlined, "label": "Home"},
       {
-        "icon": null,
-        "asset": "assets/icons/bag.png",
+        "icon": Icons.shopping_bag_outlined,
         "tag": "cart",
         "label": "Cart"
       },
       {
         "icon": null,
         "asset": "assets/icons/save.png",
-        "tag": "Favorites",
-        "label": "Favorites"
+        "tag": "favorites",
+        "label": "favorites"
       },
-      {"icon": Icons.person_rounded, "label": "Profile"},
+      {"icon": Icons.person_outline, "label": "Profile"},
     ];
 
     return Positioned(
@@ -69,11 +63,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       child: Container(
         height: 72,
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: const Color(0xFF2B2B2B), // Dark grey background
           borderRadius: BorderRadius.circular(36),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+              color: Colors.black.withOpacity(0.3),
               blurRadius: 20,
               offset: const Offset(0, 12),
             ),
@@ -90,64 +84,62 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     selectedIndex = index;
                   });
                 },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                child: Container(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 4,
                     vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? theme.colorScheme.primary.withOpacity(0.15)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          navItems[index]["asset"] != null
-                              ? ImageIcon(
-                                  AssetImage(
-                                      navItems[index]["asset"] as String),
-                                  color: isSelected
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSurface
-                                          .withOpacity(0.6),
-                                  size: 24,
-                                )
-                              : Icon(
-                                  navItems[index]["icon"] as IconData,
-                                  color: isSelected
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSurface
-                                          .withOpacity(0.6),
-                                  size: 24,
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // White circular background for active icon
+                            if (isSelected)
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
                                 ),
-                          if (navItems[index]["tag"] == "cart")
-                            Positioned(
-                              right: -6,
-                              top: -6,
-                              child: _CartBadge(),
+                              ),
+                            // Icon
+                            Center(
+                              child: navItems[index]["asset"] != null
+                                  ? ImageIcon(
+                                      AssetImage(
+                                          navItems[index]["asset"] as String),
+                                      color: isSelected
+                                          ? Colors.black
+                                          : Colors.white,
+                                      size: 24,
+                                    )
+                                  : navItems[index]["icon"] != null
+                                      ? Icon(
+                                          navItems[index]["icon"] as IconData,
+                                          color: isSelected
+                                              ? Colors.black
+                                              : Colors.white,
+                                          size: 24,
+                                        )
+                                      : const SizedBox.shrink(),
                             ),
-                        ],
-                      ),
-                      if (isSelected) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          navItems[index]["label"] as String,
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                            // Cart badge
+                            if (navItems[index]["tag"] == "cart")
+                              Positioned(
+                                right: -6,
+                                top: -6,
+                                child: _CartBadge(),
+                              ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
