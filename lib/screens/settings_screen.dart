@@ -1,4 +1,3 @@
-
 import 'package:brand_store_app/providers/theme_provider.dart';
 import 'package:brand_store_app/providers/favorite_provider.dart';
 import 'package:brand_store_app/providers/cart_provider.dart';
@@ -23,7 +22,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return AlertDialog(
           title: Text(
             'Clear Cache',
-            style: GoogleFonts.imprima(fontSize: 20, fontWeight: FontWeight.bold),
+            style:
+                GoogleFonts.imprima(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           content: Text(
             'This will clear all stored data including:\n• Cart items\n• Favorite items\n• Theme settings\n• Checkout information\n\nThis action cannot be undone.',
@@ -34,7 +34,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.imprima(fontSize: 16, color: Colors.grey[600]),
+                style:
+                    GoogleFonts.imprima(fontSize: 16, color: Colors.grey[600]),
               ),
             ),
             TextButton(
@@ -66,14 +67,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Clear SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      
+
       // Clear providers
       ref.read(cartProvider.notifier).clearCart();
       ref.read(favoriteProvider.notifier).clearFavorites();
-      
+
       // Reset theme to default
       ref.read(themeModeProvider.notifier).setTheme(ThemeMode.light);
-      
     } catch (e) {
       print('Error clearing cache: $e');
     }
@@ -109,29 +109,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       //     )
       //   ],
       // ),
-     appBar: AppBar(
+      appBar: AppBar(
         automaticallyImplyLeading: false,
-          foregroundColor: Theme.of(context).colorScheme.inverseSurface,
-          elevation: 0,
-          forceMaterialTransparency: true,
-          toolbarHeight: 100,
-          leadingWidth: 100,
-          primary: true,
-          centerTitle: true,
-          title: Text(
-            "Settings",
-            style: GoogleFonts.imprima(fontSize: 25),
-          ),
-          // leading: IconButton(
-          //   onPressed: () {
-          //     Navigator.pop(context);
-          //   },
-          //   icon: const ImageIcon(
-          //     size: 30,
-          //     AssetImage("assets/icons/back_arrow.png"),
-          //   ),
-          // ),
+        foregroundColor: Theme.of(context).colorScheme.inverseSurface,
+        elevation: 0,
+        forceMaterialTransparency: true,
+        toolbarHeight: 100,
+        leadingWidth: 100,
+        primary: true,
+        centerTitle: true,
+        title: Text(
+          "Settings",
+          style: GoogleFonts.imprima(fontSize: 25),
         ),
+        // leading: IconButton(
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        //   icon: const ImageIcon(
+        //     size: 30,
+        //     AssetImage("assets/icons/back_arrow.png"),
+        //   ),
+        // ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -172,8 +172,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(),
                 ListTile(
-                  title:
-                      Text('Favorite', style: GoogleFonts.imprima(fontSize: 18)),
+                  title: Text('Favorite',
+                      style: GoogleFonts.imprima(fontSize: 18)),
                   trailing: Consumer(
                     builder: (context, ref, child) {
                       final favorites = ref.watch(favoriteProvider);
@@ -181,7 +181,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         '${favorites.length} Item',
                         style: GoogleFonts.imprima(
                           fontSize: 14,
-                          color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .inverseSurface
+                              .withOpacity(0.7),
                         ),
                       );
                     },
@@ -192,8 +195,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(),
                 ListTile(
-                  title: Text('Clear Cache', style: GoogleFonts.imprima(fontSize: 18)),
-                  subtitle: Text('Clear all stored data', style: GoogleFonts.imprima(fontSize: 14)),
+                  title: Text('Clear Cache',
+                      style: GoogleFonts.imprima(fontSize: 18)),
+                  subtitle: Text('Clear all stored data',
+                      style: GoogleFonts.imprima(fontSize: 14)),
                   trailing: const Icon(Icons.delete_outline),
                   onTap: () {
                     _showClearCacheDialog(context);

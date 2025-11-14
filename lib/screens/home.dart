@@ -18,6 +18,7 @@ class _HomeState extends ConsumerState<Home> {
   BrandType selectedCategory = BrandType.all;
   List<ShirtModel> selectedItems = [];
   bool isLoading = true;
+  int _currentCarouselIndex = 0;
   final _cardAccentColors = const [
     Color(0xFFFFF1F5),
     Color(0xFFEFF6FF),
@@ -68,7 +69,7 @@ class _HomeState extends ConsumerState<Home> {
   Widget _buildCartIconWithBadge() {
     final cartItems = ref.watch(cartProvider);
     final totalQuantity = cartItems.fold(0, (sum, item) => sum + item.quantity);
-    
+
     return Stack(
       children: [
         const ImageIcon(
@@ -139,7 +140,7 @@ class _HomeState extends ConsumerState<Home> {
         //     )
         //   ],
         // ),
-        
+
         // bottomNavigationBar: null,
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -147,12 +148,15 @@ class _HomeState extends ConsumerState<Home> {
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildGreeting(context),
                         const SizedBox(height: 24),
+                        _buildCarousel(context),
+                        const SizedBox(height: 28),
                         _buildSectionHeader(
                           context,
                           title: "Categories",
@@ -195,11 +199,192 @@ class _HomeState extends ConsumerState<Home> {
         Text(
           "Your neighborhood, your market",
           style: GoogleFonts.imprima(
-            color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.6),
+            color:
+                Theme.of(context).colorScheme.inverseSurface.withOpacity(0.6),
             fontSize: MediaQuery.textScalerOf(context).scale(15),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCarousel(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Get first 5 products as deal items
+    final dealItems = AppData.products.take(2).toList();
+
+    if (dealItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Carousel
+        SizedBox(
+          height: 200,
+          child: PageView.builder(
+            onPageChanged: (index) {
+              setState(() {
+                _currentCarouselIndex = index;
+              });
+            },
+            itemCount: dealItems.length,
+            itemBuilder: (context, index) {
+              final product = dealItems[index];
+              return _buildCarouselCard(context, product, isDark);
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Dots indicator
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              dealItems.length,
+              (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: _currentCarouselIndex == index ? 24 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: _currentCarouselIndex == index
+                      ? Colors.red.shade400
+                      : Colors.red.shade400.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCarouselCard(
+      BuildContext context, ShirtModel product, bool isDark) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/details',
+          arguments: {
+            'shirt': product,
+            'prefix': 'home',
+          },
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: [
+              isDark ? Colors.grey.shade800 : const Color(0xFFFFF8E7),
+              isDark ? Colors.grey.shade700 : const Color(0xFFFFF5E1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              // Left side - Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Top deal!",
+                      style: GoogleFonts.imprima(
+                        fontSize: 13,
+                        color: Colors.red.shade400,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      product.name.toUpperCase(),
+                      style: GoogleFonts.imprima(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "UP TO 15% OFF",
+                      style: GoogleFonts.imprima(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade400,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "Shop Now",
+                        style: GoogleFonts.imprima(
+                          fontSize: 13,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Right side - Product image
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: isDark
+                        ? Colors.grey.shade700
+                        : Colors.white.withOpacity(0.4),
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: (product.networkImage ?? false)
+                        ? Image.network(
+                            product.thumbnail ?? product.image,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            product.image,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -237,17 +422,6 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   Widget _buildCategoryList(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final selectedColor =
-        isDark ? theme.colorScheme.surface : Colors.white;
-    final unselectedColor = isDark
-        ? theme.colorScheme.surface.withOpacity(0.5)
-        : Colors.white.withOpacity(0.5);
-    final selectedShadow = isDark
-        ? Colors.black.withOpacity(0.35)
-        : Colors.black.withOpacity(0.08);
-
     return SizedBox(
       height: 90,
       child: ListView.separated(
@@ -265,12 +439,12 @@ class _HomeState extends ConsumerState<Home> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               width: 110,
               decoration: BoxDecoration(
-                color: isSelected ? selectedColor : unselectedColor,
+                color: isSelected ? Colors.red.shade400 : Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   if (isSelected)
                     BoxShadow(
-                      color: selectedShadow,
+                      color: Colors.red.shade400.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -291,7 +465,7 @@ class _HomeState extends ConsumerState<Home> {
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: isSelected
-                          ? Theme.of(context).colorScheme.inverseSurface
+                          ? Colors.white
                           : Theme.of(context)
                               .colorScheme
                               .inverseSurface
@@ -317,10 +491,7 @@ class _HomeState extends ConsumerState<Home> {
           child: Text(
             "No products to show",
             style: GoogleFonts.imprima(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
         ),
@@ -347,8 +518,7 @@ class _HomeState extends ConsumerState<Home> {
       BuildContext context, ShirtModel product, int index) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final accentPalette =
-        isDark ? _cardAccentColorsDark : _cardAccentColors;
+    final accentPalette = isDark ? _cardAccentColorsDark : _cardAccentColors;
     final accent = accentPalette[index % accentPalette.length];
     final cardColor = theme.colorScheme.surface;
     final shadowColor =

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:brand_store_app/services/supabase_service.dart';
 
 class Checkout extends ConsumerStatefulWidget {
@@ -19,7 +20,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
-  
+
   String? savedName;
   String? savedPhone;
   String? savedAddress;
@@ -54,14 +55,17 @@ class _CheckoutState extends ConsumerState<Checkout> {
   }
 
   void _showQRCodeModal(double totalAmount) {
+    // Save parent context before showing modal
+    final parentContext = context;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
+      builder: (modalContext) => Container(
+        height: MediaQuery.of(modalContext).size.height * 0.7,
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color: Theme.of(modalContext).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -119,7 +123,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     ],
                   ),
                   child: QRCodeGenerate(
-                    promptPayId: "0957728931", // You can change this to your PromptPay ID
+                    promptPayId:
+                        "0957728931", // You can change this to your PromptPay ID
                     amount: totalAmount,
                     width: 250,
                     height: 250,
@@ -157,8 +162,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
             //     ],
             //   ),
             // ),
-          
-          
+
             // Buttons
             Padding(
               padding: const EdgeInsets.all(20),
@@ -166,7 +170,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(modalContext),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(color: Colors.grey[300]!),
@@ -187,19 +191,25 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        Navigator.pop(context);
-                        // Create order in Supabase then navigate to success page
+                        // Create order in Supabase first (before closing modal)
                         double totalAmount = 0;
                         for (var item in ref.read(cartProvider)) {
-                          totalAmount += (item.selectedVariant?.price ?? item.shirt.price) * item.quantity;
+                          totalAmount += (item.selectedVariant?.price ??
+                                  item.shirt.price) *
+                              item.quantity;
                         }
-                        final items = ref.read(cartProvider).map((it) => {
-                              'product_id': it.shirt.id,
-                              'variant_id': it.selectedVariant?.id,
-                              'name': it.selectedVariant?.name ?? it.shirt.name,
-                              'price': (it.selectedVariant?.price ?? it.shirt.price),
-                              'quantity': it.quantity,
-                            }).toList();
+                        final items = ref
+                            .read(cartProvider)
+                            .map((it) => {
+                                  'product_id': it.shirt.id,
+                                  'variant_id': it.selectedVariant?.id,
+                                  'name':
+                                      it.selectedVariant?.name ?? it.shirt.name,
+                                  'price': (it.selectedVariant?.price ??
+                                      it.shirt.price),
+                                  'quantity': it.quantity,
+                                })
+                            .toList();
 
                         final orderNumber = await SupabaseService.createOrder(
                           customerName: savedName ?? '',
@@ -209,15 +219,41 @@ class _CheckoutState extends ConsumerState<Checkout> {
                           items: items,
                         );
 
-                        ref.read(cartProvider.notifier).clearCart();
-                        if (!mounted) return;
                         if (orderNumber != null) {
-                          Navigator.pushReplacementNamed(context, '/order-success', arguments: {
-                            'orderNumber': orderNumber,
-                            'totalAmount': totalAmount,
-                          });
+                          ref.read(cartProvider.notifier).clearCart();
+
+                          // Close modal and navigate using parent context
+                          if (mounted) {
+                            Navigator.pop(modalContext);
+                            // Small delay to ensure modal is fully closed
+                            await Future.delayed(
+                                const Duration(milliseconds: 300));
+                            if (mounted) {
+                              Navigator.of(parentContext, rootNavigator: true)
+                                  .pushReplacementNamed(
+                                '/order-success',
+                                arguments: {
+                                  'orderNumber': orderNumber,
+                                  'totalAmount': totalAmount,
+                                },
+                              );
+                            }
+                          }
                         } else {
-                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          if (mounted) {
+                            Navigator.pop(modalContext);
+                            await Future.delayed(
+                                const Duration(milliseconds: 300));
+                            if (mounted) {
+                              ShadToaster.of(parentContext).show(
+                                const ShadToast(
+                                  title: Text(
+                                      "Error creating order. Please try again."),
+                                  duration: Duration(milliseconds: 2000),
+                                ),
+                              );
+                            }
+                          }
                         }
                       },
                       style: FilledButton.styleFrom(
@@ -317,9 +353,9 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                             .colorScheme
                                             .inverseSurface,
                                         fontWeight: FontWeight.w600),
-                                        
                                   ),
-                                  if (savedName != null && savedName!.isNotEmpty) ...[
+                                  if (savedName != null &&
+                                      savedName!.isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     Text(
                                       "Name: $savedName",
@@ -331,10 +367,11 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                             .inverseSurface
                                             .withOpacity(0.8),
                                       ),
-                                        overflow: TextOverflow.ellipsis,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
-                                    if (savedPhone != null && savedPhone!.isNotEmpty) ...[
+                                  if (savedPhone != null &&
+                                      savedPhone!.isNotEmpty) ...[
                                     const SizedBox(height: 2),
                                     Text(
                                       "Phone:$savedPhone",
@@ -346,10 +383,11 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                             .inverseSurface
                                             .withOpacity(0.8),
                                       ),
-                                        overflow: TextOverflow.ellipsis,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
-                                   if (savedAddress != null && savedAddress!.isNotEmpty) ...[
+                                  if (savedAddress != null &&
+                                      savedAddress!.isNotEmpty) ...[
                                     const SizedBox(height: 2),
                                     Text(
                                       "Address: $savedAddress",
@@ -365,8 +403,6 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
-                                
-                                 
                                 ],
                               ),
                             ),
@@ -387,7 +423,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                         showAddressForm = true;
                       });
                     },
-                    child: Text("Change", style: GoogleFonts.imprima(fontSize: 15)),
+                    child: Text("Change",
+                        style: GoogleFonts.imprima(fontSize: 15)),
                   ),
                 ],
               ),
@@ -562,7 +599,6 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   "assets/images/payment/promptpay.png",
                   width: 50,
                 ),
-              
               ],
             ),
             const SizedBox(
@@ -593,7 +629,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 ),
                 children: [
                   TextSpan(
-                    text: "Don’t forget to fill in your name, phone number, and house address in the village",
+                    text:
+                        "Don’t forget to fill in your name, phone number, and house address in the village",
                     style: GoogleFonts.imprima(
                       fontSize: 15,
                       color: Theme.of(context)
@@ -704,11 +741,13 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       // Calculate total amount
                       double totalAmount = 0;
                       for (var item in cartItems) {
-                        totalAmount += (item.selectedVariant?.price ?? item.shirt.price) * item.quantity;
+                        totalAmount +=
+                            (item.selectedVariant?.price ?? item.shirt.price) *
+                                item.quantity;
                       }
                       // Add delivery fee (assuming 0 for free delivery)
                       totalAmount += 0;
-                      
+
                       _showQRCodeModal(totalAmount);
                     },
                     style: FilledButton.styleFrom(

@@ -1,7 +1,6 @@
 import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cart extends ConsumerStatefulWidget {
@@ -12,216 +11,179 @@ class Cart extends ConsumerStatefulWidget {
 }
 
 class _CartState extends ConsumerState<Cart> {
+  Widget _buildCartItem(CartItem cartItem) {
+    final selectedShirt = cartItem.shirt;
+    final variantPrice = cartItem.selectedVariant?.price ?? selectedShirt.price;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-  Widget _buildListItem(BuildContext context, CartItem selectedCartItem,
-      int index, Animation<double>? animation) {
-    final selectedShirt = selectedCartItem.shirt;
-    final variantPrice =
-        selectedCartItem.selectedVariant?.price ?? selectedShirt.price;
-    final hasDiscount = variantPrice != selectedShirt.price;
-    Widget content = Slidable(
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        extentRatio: 0.2,
-        children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                onPressed: () {
-                  ref.read(cartProvider.notifier).removeItem(selectedShirt,
-                      selectedVariant: selectedCartItem.selectedVariant);
-                },
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: (selectedShirt.networkImage == null ||
-                        selectedShirt.networkImage! == false)
-                    ? Image.asset(
-                        selectedShirt.image,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.network(
-                        selectedShirt.image
-                            .replaceAll('/1.png', '/thumbnail.png'),
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          );
-                        },
-                      ),
-              ),
+      child: Row(
+        children: [
+          // รูปสินค้า
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    selectedShirt.name,
-                    style: GoogleFonts.imprima(
-                      fontSize: 16,
-                      // fontWeight: FontWeight.w600,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: (selectedShirt.networkImage == null ||
+                      selectedShirt.networkImage! == false)
+                  ? Image.asset(selectedShirt.image, fit: BoxFit.cover)
+                  : Image.network(
+                      selectedShirt.image
+                          .replaceAll('/1.png', '/thumbnail.png'),
+                      fit: BoxFit.cover,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (selectedCartItem.selectedVariant != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      selectedCartItem.selectedVariant!.name,
-                      style: GoogleFonts.imprima(
-                        fontSize: 13,
-                        color:
-                            Theme.of(context).colorScheme.inverseSurface.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        '฿${variantPrice.toStringAsFixed(2)}',
-                        style: GoogleFonts.imprima(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.inverseSurface,
-                        ),
-                      ),
-                      if (hasDiscount) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          '฿${selectedShirt.price.toStringAsFixed(2)}',
-                          style: GoogleFonts.imprima(
-                            fontSize: 14,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .inverseSurface
-                                .withOpacity(0.5),
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
             ),
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.2),
+          ),
+          const SizedBox(width: 12),
+
+          // ข้อมูลสินค้า
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  selectedShirt.name,
+                  style: GoogleFonts.imprima(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                if (cartItem.selectedVariant != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    cartItem.selectedVariant!.name,
+                    style: GoogleFonts.imprima(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    ),
                   ),
                 ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 4),
+                Text(
+                  '฿${variantPrice.toStringAsFixed(0)}',
+                  style: GoogleFonts.imprima(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ปุ่มควบคุมจำนวน
+          Column(
+            children: [
+              Row(
                 children: [
-                  _buildQuantityButton(
+                  _buildCircleButton(
                     icon: Icons.remove,
                     onTap: () {
-                      ref.read(cartProvider.notifier).decrementItem(selectedShirt,
-                          selectedVariant: selectedCartItem.selectedVariant);
+                      ref.read(cartProvider.notifier).decrementItem(
+                            selectedShirt,
+                            selectedVariant: cartItem.selectedVariant,
+                          );
                     },
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      "${selectedCartItem.quantity}",
+                      '${cartItem.quantity}',
                       style: GoogleFonts.imprima(
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
-                  _buildQuantityButton(
+                  _buildCircleButton(
                     icon: Icons.add,
                     onTap: () {
-                      ref.read(cartProvider.notifier).addItem(selectedShirt,
-                          selectedVariant: selectedCartItem.selectedVariant);
+                      ref.read(cartProvider.notifier).addItem(
+                            selectedShirt,
+                            selectedVariant: cartItem.selectedVariant,
+                          );
                     },
+                    color: Colors.red.shade400,
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () {
+                  ref.read(cartProvider.notifier).removeItem(
+                        selectedShirt,
+                        selectedVariant: cartItem.selectedVariant,
+                      );
+                },
+                icon: Icon(Icons.delete_outline,
+                    size: 18,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                label: Text(
+                  'Delete',
+                  style: GoogleFonts.imprima(
+                    fontSize: 13,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
-
-    if (animation != null) {
-      return SlideTransition(
-        position: animation.drive(
-          Tween<Offset>(
-            begin: const Offset(0, 0.1),
-            end: Offset.zero,
-          ).chain(CurveTween(curve: Curves.easeInOut)),
-        ),
-        child: FadeTransition(
-          opacity: animation,
-          child: content,
-        ),
-      );
-    }
-
-    return content;
   }
 
-  Widget _buildQuantityButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    final theme = Theme.of(context);
     return InkWell(
-      borderRadius: BorderRadius.circular(999),
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        width: 28,
-        height: 28,
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
           shape: BoxShape.circle,
+          border: Border.all(
+              color: color ?? theme.colorScheme.onSurface.withOpacity(0.3),
+              width: 1.5),
         ),
         child: Icon(
           icon,
-          size: 16,
-          color: Colors.grey.shade700,
+          size: 18,
+          color: color ?? theme.colorScheme.onSurface.withOpacity(0.5),
         ),
       ),
     );
@@ -230,238 +192,231 @@ class _CartState extends ConsumerState<Cart> {
   @override
   Widget build(BuildContext context) {
     final cartItems = ref.watch(cartProvider);
-    return ScrollConfiguration(
-      behavior: ScrollConfiguration.of(context).copyWith(
-        scrollbars: false,
-      ),
-      child: Scaffold(
-        // backgroundColor: const Color(0xFFF8F8F8),
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          foregroundColor: Theme.of(context).colorScheme.inverseSurface,
-          elevation: 0,
-          forceMaterialTransparency: true,
-          toolbarHeight: 100,
-          leadingWidth: 100,
-          primary: true,
-          centerTitle: true,
-          title: Text(
-            "Cart",
-            style: GoogleFonts.imprima(fontSize: 25),
-          ),
-          // leading: IconButton(
-          //   onPressed: () {
-          //     Navigator.pop(context);
-          //   },
-          //   icon: const ImageIcon(
-          //     size: 30,
-          //     AssetImage("assets/icons/back_arrow.png"),
-          //   ),
-          // ),
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 20),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Text(
-            //         "Cart Items",
-            //         style: GoogleFonts.imprima(
-            //           fontSize: 24,
-            //           fontWeight: FontWeight.bold,
-            //         ),
-            //       ),
-            //       const SizedBox(height: 8),
-            //       Text(
-            //         "${cartItems.length} items",
-            //         style: GoogleFonts.imprima(
-            //           fontSize: 14,
-            //           color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-            
-            // รายการสินค้า
-            Expanded(
-              child: cartItems.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.shopping_cart_outlined,
-                            size: 80,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .inverseSurface
-                                .withOpacity(0.3),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "No items in cart",
-                            style: GoogleFonts.imprima(
-                              fontSize: 20,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .inverseSurface
-                                  .withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      itemCount: cartItems.length,
-                      separatorBuilder: (_, __) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Divider(
-                          color: Colors.grey.withOpacity(0.2),
-                        ),
-                      ),
-                      itemBuilder: (context, index) {
-                        final selectedCartItem = cartItems[index];
-                        return _buildListItem(
-                            context, selectedCartItem, index, null);
-                      },
-                    ),
-            ),
-            if (cartItems.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: TextButton.icon(
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    foregroundColor: Colors.teal,
-                    textStyle: GoogleFonts.imprima(fontSize: 15),
-                    alignment: Alignment.centerLeft,
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(Icons.local_offer_outlined, size: 20),
-                  label: const Text("Add promo code"),
-                ),
-              ),
-            
-            // สรุปราคา
-            if (cartItems.isNotEmpty) ...[
-              Container(
-                margin: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
+    final totalCost = ref.watch(cartProvider.notifier).totalCost;
+    final shippingCharge = 0.0;
+    final subtotal = totalCost + shippingCharge;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bgColor =
+        isDark ? theme.colorScheme.background : const Color(0xFFF5F5F5);
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: cartItems.isEmpty
+            ? Center(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // สรุปราคา
-                    Row(
-                      children: [
-                        Text(
-                          "Total Items (${cartItems.length})",
-                          style: GoogleFonts.imprima(
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '฿${(ref.watch(cartProvider.notifier).totalCost).toStringAsFixed(0)}',
-                          style: GoogleFonts.imprima(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          "Standard Delivery",
-                          style: GoogleFonts.imprima(
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "Free",
-                          style: GoogleFonts.imprima(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 24),
-                    Row(
-                      children: [
-                        Text(
-                          "Total Payment",
-                          style: GoogleFonts.imprima(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '฿${(ref.watch(cartProvider.notifier).totalCost).toStringAsFixed(0)}',
-                          style: GoogleFonts.imprima(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ],
+                    Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 80,
+                      color: theme.colorScheme.onSurface.withOpacity(0.3),
                     ),
                     const SizedBox(height: 20),
-                    
-                    // ปุ่มชำระเงิน
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/checkout');
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          "Check Out",
-                          style: GoogleFonts.imprima(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    Text(
+                      "No items in cart",
+                      style: GoogleFonts.imprima(
+                        fontSize: 20,
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
                       ),
                     ),
                   ],
                 ),
+              )
+            : Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${cartItems.length} Items',
+                          style: GoogleFonts.imprima(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            // Navigate to add more items
+                          },
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add More'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red.shade400,
+                            textStyle: GoogleFonts.imprima(fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // รายการสินค้า
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: cartItems.length,
+                      itemBuilder: (context, index) {
+                        return _buildCartItem(cartItems[index]);
+                      },
+                    ),
+                  ),
+
+                  // Apply Promo Code
+                  Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.red.shade900.withOpacity(0.3)
+                                : Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.local_offer_outlined,
+                            color: Colors.red.shade400,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Apply Promo Code',
+                          style: GoogleFonts.imprima(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(Icons.chevron_right,
+                            color:
+                                theme.colorScheme.onSurface.withOpacity(0.3)),
+                      ],
+                    ),
+                  ),
+
+                  // Bill Details
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bill Details',
+                          style: GoogleFonts.imprima(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildBillRow('Subtotal',
+                            '฿${totalCost.toStringAsFixed(0)}', theme),
+                        const SizedBox(height: 8),
+                        _buildBillRow('Shipping Charges', 'Free', theme),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.1),
+                              height: 1),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Subtotal',
+                              style: GoogleFonts.imprima(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              '฿${subtotal.toStringAsFixed(0)}',
+                              style: GoogleFonts.imprima(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Proceed To Pay Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/checkout');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade400,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Proceed To Pay · ฿${subtotal.toStringAsFixed(0)}',
+                              style: GoogleFonts.imprima(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ],
-        ),
       ),
+    );
+  }
+
+  Widget _buildBillRow(String label, String value, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.imprima(
+            fontSize: 14,
+            color: theme.colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.imprima(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 }

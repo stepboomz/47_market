@@ -22,16 +22,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Supabase
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
-  
+
   // โหลดข้อมูลจาก JSON (จะใช้เป็น fallback)
   await AppData.loadAllData();
-  
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -45,16 +45,17 @@ class MyApp extends ConsumerWidget {
       title: '47 Market',
       themeMode: ref.watch(themeModeProvider),
       theme: ShadThemeData(
-          colorScheme: const ShadOrangeColorScheme.light(),
+          colorScheme: const ShadRedColorScheme.light(),
           brightness: Brightness.light),
       darkTheme: ShadThemeData(
-          colorScheme: const ShadOrangeColorScheme.dark(),
+          colorScheme: const ShadRedColorScheme.dark(),
           brightness: Brightness.dark),
       routes: {
         '/main': (context) => const MainScreen(),
         '/admin': (context) => const AdminScreen(),
         '/order-success': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
           return OrderSuccessScreen(
             orderNumber: args['orderNumber'],
             totalAmount: args['totalAmount'],
