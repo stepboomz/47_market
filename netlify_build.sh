@@ -16,7 +16,7 @@ flutter pub get
 flutter clean
 
 # Build web with proper font rendering
-flutter build web --release --web-renderer canvaskit --csp
+flutter build web --release --web-renderer html --csp
 
 # Ensure fonts are accessible
 mkdir -p build/web/assets/fonts
