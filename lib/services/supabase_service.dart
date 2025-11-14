@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
+import 'dart:typed_data';
 import '../models/category_model.dart';
 import '../models/shirt_model.dart';
 import '../models/product_variant.dart';
@@ -105,6 +106,20 @@ class SupabaseService {
       return storage.getPublicUrl(fileName);
     } catch (e) {
       print('Error uploadImage: $e');
+      return null;
+    }
+  }
+
+  // Storage: upload slip image to bucket 'payment-slips'
+  static Future<String?> uploadSlipImage(
+      Uint8List imageBytes, String fileName) async {
+    try {
+      final storage = _client.storage.from('payment-slips');
+      await storage.uploadBinary(fileName, imageBytes,
+          fileOptions: const FileOptions(upsert: true));
+      return storage.getPublicUrl(fileName);
+    } catch (e) {
+      print('Error uploadSlipImage: $e');
       return null;
     }
   }
@@ -247,19 +262,36 @@ class SupabaseService {
     }
   }
 
+  // Check if transaction reference already exists
+  static Future<bool> isTransRefUsed(String transRef) async {
+    try {
+      final response = await _client
+          .from('orders')
+          .select('id')
+          .eq('trans_ref', transRef)
+          .limit(1);
+      return response.isNotEmpty;
+    } catch (e) {
+      print('Error checking transRef: $e');
+      return false;
+    }
+  }
+
   // Orders
-  static Future<String?> createOrder({
+  static Future<Map<String, String>?> createOrder({
     required String customerName,
     required String customerPhone,
     required String customerAddress,
     required double totalAmount,
     required List<Map<String, dynamic>> items,
+    String? transRef,
+    String? slipImageUrl,
   }) async {
     try {
       final String orderId = DateTime.now().millisecondsSinceEpoch.toString();
       final String orderNumber = _generateOrderNumber();
 
-      await _client.from('orders').insert({
+      final orderData = {
         'id': orderId,
         'order_number': orderNumber,
         'customer_name': customerName,
@@ -267,7 +299,19 @@ class SupabaseService {
         'customer_address': customerAddress,
         'total_amount': totalAmount,
         'status': 'pending',
-      });
+      };
+
+      // Add trans_ref if provided
+      if (transRef != null && transRef.isNotEmpty) {
+        orderData['trans_ref'] = transRef;
+      }
+
+      // Add slip_image_url if provided
+      if (slipImageUrl != null && slipImageUrl.isNotEmpty) {
+        orderData['slip_image_url'] = slipImageUrl;
+      }
+
+      await _client.from('orders').insert(orderData);
 
       final orderItems = items
           .map((e) => {
@@ -284,7 +328,10 @@ class SupabaseService {
         await _client.from('order_items').insert(orderItems);
       }
 
-      return orderNumber;
+      return {
+        'orderId': orderId,
+        'orderNumber': orderNumber,
+      };
     } catch (e) {
       print('Error createOrder: $e');
       return null;

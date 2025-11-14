@@ -1,12 +1,11 @@
 import 'package:brand_store_app/providers/cart_provider.dart';
+import 'package:brand_store_app/screens/slip_verification.dart';
 import 'package:brand_store_app/services/storage_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:brand_store_app/services/supabase_service.dart';
 
 class Checkout extends ConsumerStatefulWidget {
   const Checkout({super.key});
@@ -16,7 +15,7 @@ class Checkout extends ConsumerStatefulWidget {
 }
 
 class _CheckoutState extends ConsumerState<Checkout> {
-  bool showAddressForm = true;
+  bool showAddressForm = false;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -52,6 +51,20 @@ class _CheckoutState extends ConsumerState<Checkout> {
     phoneController.dispose();
     addressController.dispose();
     super.dispose();
+  }
+
+  bool _isFormValid() {
+    if (showAddressForm) {
+      // Check if form fields are filled
+      return nameController.text.trim().isNotEmpty &&
+          phoneController.text.trim().isNotEmpty &&
+          addressController.text.trim().isNotEmpty;
+    } else {
+      // Check if saved data exists
+      return (savedName?.trim().isNotEmpty ?? false) &&
+          (savedPhone?.trim().isNotEmpty ?? false) &&
+          (savedAddress?.trim().isNotEmpty ?? false);
+    }
   }
 
   void _showQRCodeModal(double totalAmount) {
@@ -191,7 +204,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        // Create order in Supabase first (before closing modal)
+                        // Calculate total amount and prepare order items
                         double totalAmount = 0;
                         for (var item in ref.read(cartProvider)) {
                           totalAmount += (item.selectedVariant?.price ??
@@ -211,53 +224,31 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                 })
                             .toList();
 
-                        final orderNumber = await SupabaseService.createOrder(
-                          customerName: savedName ?? '',
-                          customerPhone: savedPhone ?? '',
-                          customerAddress: savedAddress ?? '',
-                          totalAmount: totalAmount,
-                          items: items,
-                        );
-
-                        if (orderNumber != null) {
-                          ref.read(cartProvider.notifier).clearCart();
-
-                          // Close modal and navigate using parent context
+                        // Close QR modal and show slip verification modal
+                        if (mounted) {
+                          Navigator.pop(modalContext);
+                          // Small delay to ensure modal is fully closed
+                          await Future.delayed(
+                              const Duration(milliseconds: 300));
                           if (mounted) {
-                            Navigator.pop(modalContext);
-                            // Small delay to ensure modal is fully closed
-                            await Future.delayed(
-                                const Duration(milliseconds: 300));
-                            if (mounted) {
-                              Navigator.of(parentContext, rootNavigator: true)
-                                  .pushReplacementNamed(
-                                '/order-success',
-                                arguments: {
-                                  'orderNumber': orderNumber,
-                                  'totalAmount': totalAmount,
-                                },
-                              );
-                            }
-                          }
-                        } else {
-                          if (mounted) {
-                            Navigator.pop(modalContext);
-                            await Future.delayed(
-                                const Duration(milliseconds: 300));
-                            if (mounted) {
-                              ShadToaster.of(parentContext).show(
-                                const ShadToast(
-                                  title: Text(
-                                      "Error creating order. Please try again."),
-                                  duration: Duration(milliseconds: 2000),
-                                ),
-                              );
-                            }
+                            showModalBottomSheet(
+                              context: parentContext,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => SlipVerification(
+                                orderNumber: '', // Will be generated after verification
+                                totalAmount: totalAmount,
+                                customerName: savedName ?? '',
+                                customerPhone: savedPhone ?? '',
+                                customerAddress: savedAddress ?? '',
+                                orderItems: items,
+                              ),
+                            );
                           }
                         }
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: Colors.red.shade400,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -307,11 +298,13 @@ class _CheckoutState extends ConsumerState<Checkout> {
         ),
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Text(
               "Delivery Address",
               style: GoogleFonts.chakraPetch(
@@ -432,6 +425,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
               const SizedBox(height: 10),
               TextField(
                 controller: nameController,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: "Name",
                   border: OutlineInputBorder(
@@ -453,6 +447,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
               const SizedBox(height: 10),
               TextField(
                 controller: phoneController,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: "Phone",
                   border: OutlineInputBorder(
@@ -475,6 +470,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
               const SizedBox(height: 10),
               TextField(
                 controller: addressController,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: "Address",
                   border: OutlineInputBorder(
@@ -540,7 +536,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: Colors.red.shade400,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -662,7 +658,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 ],
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 20),
             Column(
               children: [
                 const Divider(),
@@ -735,23 +731,56 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 const SizedBox(
                   height: 20,
                 ),
+                if (!_isFormValid())
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            "Please add your address before checkout",
+                            style: GoogleFonts.chakraPetch(
+                              fontSize: 12,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 Center(
                   child: FilledButton(
-                    onPressed: () {
-                      // Calculate total amount
-                      double totalAmount = 0;
-                      for (var item in cartItems) {
-                        totalAmount +=
-                            (item.selectedVariant?.price ?? item.shirt.price) *
-                                item.quantity;
-                      }
-                      // Add delivery fee (assuming 0 for free delivery)
-                      totalAmount += 0;
+                    onPressed: _isFormValid()
+                        ? () {
+                            // Calculate total amount
+                            double totalAmount = 0;
+                            for (var item in cartItems) {
+                              totalAmount +=
+                                  (item.selectedVariant?.price ??
+                                          item.shirt.price) *
+                                      item.quantity;
+                            }
+                            // Add delivery fee (assuming 0 for free delivery)
+                            totalAmount += 0;
 
-                      _showQRCodeModal(totalAmount);
-                    },
+                            _showQRCodeModal(totalAmount);
+                          }
+                        : null,
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: _isFormValid()
+                          ? Colors.red.shade400
+                          : Colors.grey.shade300,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 40, vertical: 10),
                       shape: RoundedRectangleBorder(
@@ -761,7 +790,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     child: Text(
                       "Check Out",
                       style: GoogleFonts.chakraPetch(
-                        color: Colors.white,
+                        color: _isFormValid() ? Colors.white : Colors.grey.shade600,
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                       ),
@@ -774,6 +803,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
               ],
             )
           ],
+        ),
         ),
       ),
     );
