@@ -675,90 +675,86 @@ class _HomeState extends ConsumerState<Home> {
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: [180.0, 210.0, 240.0][index % 3],
-                decoration: BoxDecoration(
-                  color: isDark ? accent.withOpacity(0.8) : accent,
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: (product.networkImage ?? false)
-                        ? Image.network(
-                            product.thumbnail ?? product.image,
-                            fit: BoxFit.cover,
-                          )
-                        : Image.asset(
-                            product.image,
-                            fit: BoxFit.cover,
-                          ),
-                  ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: [180.0, 210.0, 240.0][index % 3],
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: Colors.grey,
+                image: DecorationImage(
+                  image: (product.networkImage ?? false)
+                      ? NetworkImage(product.thumbnail ?? product.image)
+                      : AssetImage(product.image) as ImageProvider,
+                  fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 14),
-              Text(
-                product.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.chakraPetch(
-                  fontSize: 16,
-                  // fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
+            ),
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.chakraPetch(
+                      fontSize: 16,
+                      // fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
                     children: [
-                      Text(
-                        '${product.price.toStringAsFixed(2)}',
-                        style: GoogleFonts.chakraPetch(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${product.price.toStringAsFixed(2)}',
+                            style: GoogleFonts.chakraPetch(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "per pack",
+                            style: GoogleFonts.chakraPetch(
+                              fontSize: 12,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .inverseSurface
+                                  .withOpacity(0.45),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        "per pack",
-                        style: GoogleFonts.chakraPetch(
-                          fontSize: 12,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .inverseSurface
-                              .withOpacity(0.45),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          ref.read(cartProvider.notifier).addItem(product);
+                        },
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: theme.colorScheme.onPrimary,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(cartProvider.notifier).addItem(product);
-                    },
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        color: theme.colorScheme.onPrimary,
-                        size: 20,
-                      ),
-                    ),
-                  ),
+                  )
                 ],
-              )
-            ],
-          ),
+              ),
+            )
+          ],
         ),
       ),
     );

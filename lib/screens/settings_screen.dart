@@ -196,107 +196,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   },
                 ),
                 const Divider(),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final isLoggedIn = AuthService().isLoggedIn;
-                    return ListTile(
-                      leading: Icon(isLoggedIn ? Icons.logout : Icons.login),
-                      title: Text(isLoggedIn ? 'Logout' : 'Login',
-                          style: GoogleFonts.chakraPetch(fontSize: 18)),
-                      onTap: () async {
-                        if (isLoggedIn) {
-                          // Show confirmation dialog for logout
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(
-                                  'Logout',
-                                  style: GoogleFonts.chakraPetch(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                content: Text(
-                                  'Are you sure you want to logout?',
-                                  style: GoogleFonts.chakraPetch(fontSize: 16),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: Text(
-                                      'Cancel',
-                                      style: GoogleFonts.chakraPetch(
-                                          fontSize: 16,
-                                          color: Colors.grey[600]),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () async {
-                                      Navigator.of(context).pop();
 
-                                      // Show loading indicator
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (context) => const Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      );
-
-                                      try {
-                                        await AuthService().signOut();
-
-                                        if (mounted) {
-                                          Navigator.pop(
-                                              context); // Remove loading indicator
-
-                                          // Navigate to onboarding screen
-                                          Navigator.pushAndRemoveUntil(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const Onboarding(),
-                                            ),
-                                            (route) => false,
-                                          );
-                                        }
-                                      } catch (e) {
-                                        if (mounted) {
-                                          Navigator.pop(
-                                              context); // Remove loading indicator
-
-                                          // Show error message
-                                          ShadToaster.of(context).show(
-                                            ShadToast(
-                                              title: Text('Logout Failed'),
-                                              description: Text(e.toString()),
-                                              duration: const Duration(
-                                                  milliseconds: 3000),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    },
-                                    child: Text(
-                                      'Logout',
-                                      style: GoogleFonts.chakraPetch(
-                                          fontSize: 16, color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        } else {
-                          // Navigate to login screen
-                          Navigator.pushNamed(context, '/login');
-                        }
-                      },
-                    );
-                  },
-                ),
-                const Divider(),
                 ListTile(
                   title: Text('Clear Cache',
                       style: GoogleFonts.chakraPetch(fontSize: 18)),
@@ -307,7 +207,108 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     _showClearCacheDialog(context);
                   },
                 ),
-                const Divider(),
+                // const Divider(),
+                // Consumer(
+                //   builder: (context, ref, child) {
+                //     final isLoggedIn = AuthService().isLoggedIn;
+                //     return ListTile(
+                //       leading: Icon(isLoggedIn ? Icons.logout : Icons.login),
+                //       title: Text(isLoggedIn ? 'Logout' : 'Login',
+                //           style: GoogleFonts.chakraPetch(fontSize: 18)),
+                //       onTap: () async {
+                //         if (isLoggedIn) {
+                //           // Show confirmation dialog for logout
+                //           showDialog(
+                //             context: context,
+                //             builder: (BuildContext context) {
+                //               return AlertDialog(
+                //                 title: Text(
+                //                   'Logout',
+                //                   style: GoogleFonts.chakraPetch(
+                //                       fontSize: 20,
+                //                       fontWeight: FontWeight.bold),
+                //                 ),
+                //                 content: Text(
+                //                   'Are you sure you want to logout?',
+                //                   style: GoogleFonts.chakraPetch(fontSize: 16),
+                //                 ),
+                //                 actions: [
+                //                   TextButton(
+                //                     onPressed: () =>
+                //                         Navigator.of(context).pop(),
+                //                     child: Text(
+                //                       'Cancel',
+                //                       style: GoogleFonts.chakraPetch(
+                //                           fontSize: 16,
+                //                           color: Colors.grey[600]),
+                //                     ),
+                //                   ),
+                //                   TextButton(
+                //                     onPressed: () async {
+                //                       Navigator.of(context).pop();
+
+                //                       // Show loading indicator
+                //                       showDialog(
+                //                         context: context,
+                //                         barrierDismissible: false,
+                //                         builder: (context) => const Center(
+                //                           child: CircularProgressIndicator(),
+                //                         ),
+                //                       );
+
+                //                       try {
+                //                         await AuthService().signOut();
+
+                //                         if (mounted) {
+                //                           Navigator.pop(
+                //                               context); // Remove loading indicator
+
+                //                           // Navigate to onboarding screen
+                //                           Navigator.pushAndRemoveUntil(
+                //                             context,
+                //                             MaterialPageRoute(
+                //                               builder: (context) =>
+                //                                   const Onboarding(),
+                //                             ),
+                //                             (route) => false,
+                //                           );
+                //                         }
+                //                       } catch (e) {
+                //                         if (mounted) {
+                //                           Navigator.pop(
+                //                               context); // Remove loading indicator
+
+                //                           // Show error message
+                //                           ShadToaster.of(context).show(
+                //                             ShadToast(
+                //                               title: Text('Logout Failed'),
+                //                               description: Text(e.toString()),
+                //                               duration: const Duration(
+                //                                   milliseconds: 3000),
+                //                             ),
+                //                           );
+                //                         }
+                //                       }
+                //                     },
+                //                     child: Text(
+                //                       'Logout',
+                //                       style: GoogleFonts.chakraPetch(
+                //                           fontSize: 16, color: Colors.red),
+                //                     ),
+                //                   ),
+                //                 ],
+                //               );
+                //             },
+                //           );
+                //         } else {
+                //           // Navigate to login screen
+                //           Navigator.pushNamed(context, '/login');
+                //         }
+                //       },
+                //     );
+                //   },
+                // ),
+                // const Divider(),
                 // ListTile(
                 //   title:
                 //       Text('Logout', style: GoogleFonts.chakraPetch(fontSize: 18)),
