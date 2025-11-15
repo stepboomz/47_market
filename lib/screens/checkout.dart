@@ -220,6 +220,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
           arguments: {
             'orderNumber': orderNumber,
             'totalAmount': finalTotal,
+            'paymentMethod': 'cash',
           },
         );
       }
@@ -258,8 +259,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
         customerPhone: savedPhone ?? '',
         customerAddress: savedAddress ?? '',
         orderItems: items,
-        promoCodeId: promoCodeId,
-        discountAmount: discountAmount,
+        // promoCodeId: promoCodeId,
+        // discountAmount: discountAmount,
       ),
     );
   }

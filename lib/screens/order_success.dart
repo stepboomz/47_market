@@ -4,8 +4,24 @@ import 'package:google_fonts/google_fonts.dart';
 class OrderSuccessScreen extends StatelessWidget {
   final String orderNumber;
   final double totalAmount;
-  const OrderSuccessScreen(
-      {super.key, required this.orderNumber, required this.totalAmount});
+  final String paymentMethod; // 'qr' or 'cash'
+  const OrderSuccessScreen({
+    super.key,
+    required this.orderNumber,
+    required this.totalAmount,
+    this.paymentMethod = 'qr', // Default to 'qr' for backward compatibility
+  });
+
+  String _getPaymentMethodDisplay() {
+    switch (paymentMethod.toLowerCase()) {
+      case 'qr':
+        return 'Prompt Pay';
+      case 'cash':
+        return 'Cash';
+      default:
+        return 'Prompt Pay';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,30 +36,30 @@ class OrderSuccessScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Close button (top right)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: GestureDetector(
-                      onTap: () =>
-                          Navigator.of(context).popUntil((r) => r.isFirst),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            )
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: const Icon(Icons.close,
-                            size: 20, color: Colors.black),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  // Align(
+                  //   alignment: Alignment.topRight,
+                  //   child: GestureDetector(
+                  //     onTap: () =>
+                  //         Navigator.of(context).popUntil((r) => r.isFirst),
+                  //     child: Container(
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.white,
+                  //         shape: BoxShape.circle,
+                  //         boxShadow: [
+                  //           BoxShadow(
+                  //             color: Colors.black.withOpacity(0.1),
+                  //             blurRadius: 8,
+                  //             offset: const Offset(0, 2),
+                  //           )
+                  //         ],
+                  //       ),
+                  //       padding: const EdgeInsets.all(8),
+                  //       child: const Icon(Icons.close,
+                  //           size: 20, color: Colors.black),
+                  //     ),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 20),
 
                   // Main Card
                   Container(
@@ -211,7 +227,7 @@ class OrderSuccessScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Prompt Pay',
+                                  _getPaymentMethodDisplay(),
                                   style: GoogleFonts.chakraPetch(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,

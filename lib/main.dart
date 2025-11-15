@@ -69,6 +69,7 @@ class MyApp extends ConsumerWidget {
           return OrderSuccessScreen(
             orderNumber: args['orderNumber'],
             totalAmount: args['totalAmount'],
+            paymentMethod: args['paymentMethod'] ?? 'qr',
           );
         },
         '/cart': (context) => const Cart(),
