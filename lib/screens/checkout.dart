@@ -734,117 +734,128 @@ class _CheckoutState extends ConsumerState<Checkout> {
             const SizedBox(
               height: 10,
             ),
-            Row(
-              children: [
-                // PromptPay (QR Code) option
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedPaymentMethod = 'qr';
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: selectedPaymentMethod == 'qr'
-                            ? Colors.red.shade50
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: selectedPaymentMethod == 'qr'
-                              ? Colors.red.shade400
-                              : Colors.grey.shade300,
-                          width: selectedPaymentMethod == 'qr' ? 2 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            "assets/images/payment/promptpay.png",
-                            width: 32,
-                            height: 32,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              "PromptPay",
-                              style: GoogleFonts.chakraPetch(
-                                fontSize: 13,
-                                fontWeight: selectedPaymentMethod == 'qr'
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inverseSurface,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+            Builder(
+              builder: (context) {
+                final theme = Theme.of(context);
+                final colorScheme = theme.colorScheme;
+                final isDark = theme.brightness == Brightness.dark;
+                
+                return Row(
+                  children: [
+                    // PromptPay (QR Code) option
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedPaymentMethod = 'qr';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: selectedPaymentMethod == 'qr'
+                                ? (isDark
+                                    ? Colors.red.shade900.withOpacity(0.3)
+                                    : Colors.red.shade50)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: selectedPaymentMethod == 'qr'
+                                  ? Colors.red.shade400
+                                  : (isDark
+                                      ? colorScheme.onSurface.withOpacity(0.3)
+                                      : Colors.grey.shade300),
+                              width: selectedPaymentMethod == 'qr' ? 2 : 1,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Cash option
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedPaymentMethod = 'cash';
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: selectedPaymentMethod == 'cash'
-                            ? Colors.red.shade50
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: selectedPaymentMethod == 'cash'
-                              ? Colors.red.shade400
-                              : Colors.grey.shade300,
-                          width: selectedPaymentMethod == 'cash' ? 2 : 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                "assets/images/payment/promptpay.png",
+                                width: 32,
+                                height: 32,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  "PromptPay",
+                                  style: GoogleFonts.chakraPetch(
+                                    fontSize: 13,
+                                    fontWeight: selectedPaymentMethod == 'qr'
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.money,
-                            size: 20,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .inverseSurface,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              "Cash",
-                              style: GoogleFonts.chakraPetch(
-                                fontSize: 13,
-                                fontWeight: selectedPaymentMethod == 'cash'
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inverseSurface,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(width: 12),
+                    // Cash option
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedPaymentMethod = 'cash';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: selectedPaymentMethod == 'cash'
+                                ? (isDark
+                                    ? Colors.red.shade900.withOpacity(0.3)
+                                    : Colors.red.shade50)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: selectedPaymentMethod == 'cash'
+                                  ? Colors.red.shade400
+                                  : (isDark
+                                      ? colorScheme.onSurface.withOpacity(0.3)
+                                      : Colors.grey.shade300),
+                              width: selectedPaymentMethod == 'cash' ? 2 : 1,
                             ),
                           ),
-                        ],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                "assets/icons/cash.png",
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  "Cash",
+                                  style: GoogleFonts.chakraPetch(
+                                    fontSize: 13,
+                                    fontWeight: selectedPaymentMethod == 'cash'
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
             const SizedBox(
               height: 30,

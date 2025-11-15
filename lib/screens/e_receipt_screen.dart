@@ -29,6 +29,8 @@ class EReceiptScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final orderItems = order['order_items'] as List? ?? [];
     final totalAmount = (order['total_amount'] as num?)?.toDouble() ?? 0.0;
     final orderNumber = order['order_number'] as String? ?? 'N/A';
@@ -40,7 +42,7 @@ class EReceiptScreen extends StatelessWidget {
     final taxAmount = totalAmount * taxRate / (1 + taxRate);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: isDark ? colorScheme.background : Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         foregroundColor: theme.colorScheme.inverseSurface,
@@ -52,13 +54,19 @@ class EReceiptScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: Icon(
+              Icons.share,
+              color: colorScheme.onSurface,
+            ),
             onPressed: () {
               // TODO: Implement share functionality
             },
           ),
           IconButton(
-            icon: const Icon(Icons.print),
+            icon: Icon(
+              Icons.print,
+              color: colorScheme.onSurface,
+            ),
             onPressed: () {
               // TODO: Implement print functionality
             },
@@ -71,11 +79,11 @@ class EReceiptScreen extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 400),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? colorScheme.surface : Colors.white,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -87,14 +95,18 @@ class EReceiptScreen extends StatelessWidget {
                 Container(
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? colorScheme.surface : Colors.white,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(8),
                       topRight: Radius.circular(8),
                     ),
                   ),
                   child: CustomPaint(
-                    painter: _PerforatedEdgePainter(),
+                    painter: _PerforatedEdgePainter(
+                      color: isDark
+                          ? colorScheme.onSurface.withOpacity(0.3)
+                          : Colors.grey.shade300,
+                    ),
                   ),
                 ),
                 
@@ -110,6 +122,7 @@ class EReceiptScreen extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1,
+                          color: colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -118,7 +131,7 @@ class EReceiptScreen extends StatelessWidget {
                         'ADDRESS: 95/147 Siri Place 52, Soi 4 Khlong Thanon, Sai Mai, Bangkok 10220',
                         style: GoogleFonts.chakraPetch(
                           fontSize: 12,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -127,7 +140,7 @@ class EReceiptScreen extends StatelessWidget {
                         'PHONE: 0957728931',
                         style: GoogleFonts.chakraPetch(
                           fontSize: 12,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -136,13 +149,13 @@ class EReceiptScreen extends StatelessWidget {
                         transRef.isNotEmpty ? 'No.$transRef' : 'No.$orderNumber',
                         style: GoogleFonts.chakraPetch(
                           fontSize: 12,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
                       
                       // Dashed line
-                      _buildDashedLine(),
+                      _buildDashedLine(context),
                       
                       // Transaction Details
                       Row(
@@ -153,6 +166,7 @@ class EReceiptScreen extends StatelessWidget {
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           Text(
@@ -160,6 +174,7 @@ class EReceiptScreen extends StatelessWidget {
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -169,12 +184,12 @@ class EReceiptScreen extends StatelessWidget {
                         _formatDate(createdAt),
                         style: GoogleFonts.chakraPetch(
                           fontSize: 11,
-                          color: Colors.grey.shade600,
+                          color: colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
                       
                       // Dashed line
-                      _buildDashedLine(),
+                      _buildDashedLine(context),
                       
                       // Itemized List
                       ...orderItems.map<Widget>((item) {
@@ -194,6 +209,7 @@ class EReceiptScreen extends StatelessWidget {
                                   itemName,
                                   style: GoogleFonts.chakraPetch(
                                     fontSize: 12,
+                                    color: colorScheme.onSurface,
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -204,6 +220,7 @@ class EReceiptScreen extends StatelessWidget {
                                 _formatPrice(itemTotal),
                                 style: GoogleFonts.chakraPetch(
                                   fontSize: 12,
+                                  color: colorScheme.onSurface,
                                 ),
                                 textAlign: TextAlign.right,
                               ),
@@ -213,7 +230,7 @@ class EReceiptScreen extends StatelessWidget {
                       }).toList(),
                       
                       // Dashed line
-                      _buildDashedLine(),
+                      _buildDashedLine(context),
                       
                       // Summary Section
                       Row(
@@ -224,6 +241,7 @@ class EReceiptScreen extends StatelessWidget {
                             style: GoogleFonts.chakraPetch(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           Text(
@@ -231,6 +249,7 @@ class EReceiptScreen extends StatelessWidget {
                             style: GoogleFonts.chakraPetch(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -243,12 +262,14 @@ class EReceiptScreen extends StatelessWidget {
                             'Cash',
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           Text(
                             _formatPrice(totalAmount),
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -261,26 +282,28 @@ class EReceiptScreen extends StatelessWidget {
                             'Change',
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           Text(
                             _formatPrice(0.0),
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
                       ),
                       
                       // Dashed line
-                      _buildDashedLine(),
+                      _buildDashedLine(context),
                       
                       // Tax Information
                       Text(
                         'TAX/VAT INCLUDED IN ABOVE TOTAL',
                         style: GoogleFonts.chakraPetch(
                           fontSize: 10,
-                          color: Colors.grey.shade600,
+                          color: colorScheme.onSurface.withOpacity(0.6),
                         ),
                         textAlign: TextAlign.left,
                       ),
@@ -292,12 +315,14 @@ class EReceiptScreen extends StatelessWidget {
                             'Tax',
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           Text(
                             _formatPrice(taxAmount),
                             style: GoogleFonts.chakraPetch(
                               fontSize: 12,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -310,14 +335,18 @@ class EReceiptScreen extends StatelessWidget {
                 Container(
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? colorScheme.surface : Colors.white,
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(8),
                       bottomRight: Radius.circular(8),
                     ),
                   ),
                   child: CustomPaint(
-                    painter: _PerforatedEdgePainter(),
+                    painter: _PerforatedEdgePainter(
+                      color: isDark
+                          ? colorScheme.onSurface.withOpacity(0.3)
+                          : Colors.grey.shade300,
+                    ),
                   ),
                 ),
               ],
@@ -328,12 +357,19 @@ class EReceiptScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDashedLine() {
+  Widget _buildDashedLine(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: CustomPaint(
         size: const Size(double.infinity, 1),
-        painter: _DashedLinePainter(),
+        painter: _DashedLinePainter(
+          color: isDark
+              ? colorScheme.onSurface.withOpacity(0.3)
+              : Colors.grey.shade400,
+        ),
       ),
     );
   }
@@ -347,10 +383,14 @@ class EReceiptScreen extends StatelessWidget {
 
 // Custom painter for dashed line
 class _DashedLinePainter extends CustomPainter {
+  final Color color;
+
+  _DashedLinePainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.shade400
+      ..color = color
       ..strokeWidth = 1;
 
     const dashWidth = 5.0;
@@ -368,15 +408,20 @@ class _DashedLinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DashedLinePainter oldDelegate) => false;
+  bool shouldRepaint(_DashedLinePainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 // Custom painter for perforated edge
 class _PerforatedEdgePainter extends CustomPainter {
+  final Color color;
+
+  _PerforatedEdgePainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.shade300
+      ..color = color
       ..strokeWidth = 1;
 
     const circleRadius = 3.0;
@@ -394,6 +439,7 @@ class _PerforatedEdgePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PerforatedEdgePainter oldDelegate) => false;
+  bool shouldRepaint(_PerforatedEdgePainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 

@@ -13,7 +13,9 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   List<Map<String, dynamic>> _orders = [];
   bool _isLoading = true;
-  Set<int> _expandedOrders = {};
+  String _searchQuery = '';
+  int _currentPage = 1;
+  final int _itemsPerPage = 6;
 
   @override
   void initState() {
@@ -43,9 +45,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'In Progress';
+        return 'Shipping';
       case 'processing':
-        return 'In Progress';
+        return 'Shipping';
       case 'completed':
         return 'Delivered';
       default:
@@ -53,391 +55,317 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  // Convert UTC to Thailand time (UTC+7)
-  DateTime _toThailandTime(DateTime utcDate) {
-    return utcDate.add(const Duration(hours: 7));
-  }
-
-  List<Map<String, dynamic>> _getTimelineStages(
-    String status,
-    String? createdAt,
-    String? updatedAt,
-  ) {
-    DateTime? placedDate;
-    DateTime? progressDate;
-    DateTime? deliveredDate;
-
-    // Parse dates and convert to Thailand time
-    if (createdAt != null) {
-      try {
-        final utcDate = DateTime.parse(createdAt).toUtc();
-        placedDate = _toThailandTime(utcDate);
-        // In Progress uses the same date as Order Placed if status is pending
-        if (status == 'pending') {
-          progressDate = placedDate;
-        }
-      } catch (e) {
-        print('Error parsing createdAt: $e');
-      }
-    }
-
-    if (updatedAt != null) {
-      try {
-        final utcDate = DateTime.parse(updatedAt).toUtc();
-        final thaiDate = _toThailandTime(utcDate);
-        // If status is completed, use updatedAt for delivered date
-        if (status == 'completed') {
-          deliveredDate = thaiDate;
-          // In Progress date is between placed and delivered
-          if (placedDate != null) {
-            final diff = deliveredDate.difference(placedDate);
-            progressDate = placedDate.add(Duration(seconds: diff.inSeconds ~/ 2));
-          }
-        } else if (status == 'pending') {
-          // If still pending, progress date is same as placed
-          progressDate = placedDate;
-        }
-      } catch (e) {
-        print('Error parsing updatedAt: $e');
-      }
-    }
-
-    final stages = [
-      {
-        'key': 'placed',
-        'title': 'Order Placed',
-        'icon': Icons.shopping_bag,
-        'completed': true,
-        'date': placedDate,
-      },
-      {
-        'key': 'progress',
-        'title': 'In Progress',
-        'icon': Icons.percent,
-        'completed': status == 'pending' || status == 'completed',
-        'date': progressDate,
-      },
-      {
-        'key': 'delivered',
-        'title': 'Delivered',
-        'icon': Icons.home,
-        'completed': status == 'completed',
-        'date': deliveredDate,
-      },
-    ];
-
-    return stages;
-  }
-
-  String _formatTimelineDate(DateTime? date, bool isCompleted) {
-    if (date == null) return '';
-    if (isCompleted) {
-      // Format: "Fri, 23 Feb 22, 4:23 PM" in Thai time
-      return DateFormat('EEE, dd MMM yy, h:mm a', 'en').format(date);
-    } else {
-      // For pending stages, show expected date
-      return 'Expected ${DateFormat('dd MMM', 'en').format(date)}';
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+      case 'processing':
+        return Colors.orange; // Yellow/Orange for Shipping
+      case 'completed':
+        return Colors.green; // Green for Delivered
+      default:
+        return Colors.red; // Red for Canceled or other
     }
   }
 
+  String _formatOrderDate(String? dateString) {
+    if (dateString == null) return '';
+    try {
+      final date = DateTime.parse(dateString);
+      // Format: M/d/yy (e.g., 1/31/14, 7/18/17)
+      return DateFormat('M/d/yy').format(date);
+    } catch (e) {
+      return '';
+    }
+  }
 
-  Widget _buildTimelineStage(
-    BuildContext context,
-    Map<String, dynamic> stage,
-    bool isLast,
-    ThemeData theme,
-  ) {
-    final isCompleted = stage['completed'] as bool;
-    final date = stage['date'] as DateTime?;
-    final icon = stage['icon'] as IconData;
-    final title = stage['title'] as String;
+  List<Map<String, dynamic>> get _filteredOrders {
+    if (_searchQuery.isEmpty) {
+      return _orders;
+    }
+    return _orders.where((order) {
+      final orderNumber = (order['order_number'] as String? ?? '').toLowerCase();
+      return orderNumber.contains(_searchQuery.toLowerCase());
+    }).toList();
+  }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Timeline indicator
-        Column(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isCompleted ? Colors.green : Colors.grey.shade300,
-                border: Border.all(
-                  color: isCompleted ? Colors.green : Colors.grey.shade400,
-                  width: 2,
-                ),
-              ),
-              child: Icon(
-                Icons.check,
-                size: 18,
-                color: isCompleted ? Colors.white : Colors.grey.shade600,
-              ),
-            ),
-            if (!isLast)
-              CustomPaint(
-                size: const Size(2, 60),
-                painter: _DashedLinePainter(
-                  color: isCompleted ? Colors.green : Colors.grey.shade300,
-                  isDashed: !isCompleted,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        // Content
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.chakraPetch(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _formatTimelineDate(date, isCompleted),
-                style: GoogleFonts.chakraPetch(
-                  fontSize: 12,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Right icon
-        Icon(
-          icon,
-          size: 24,
-          color: isCompleted ? Colors.green : Colors.grey.shade400,
-        ),
-      ],
+  List<Map<String, dynamic>> get _paginatedOrders {
+    final startIndex = (_currentPage - 1) * _itemsPerPage;
+    final endIndex = startIndex + _itemsPerPage;
+    if (startIndex >= _filteredOrders.length) {
+      return [];
+    }
+    return _filteredOrders.sublist(
+      startIndex,
+      endIndex > _filteredOrders.length ? _filteredOrders.length : endIndex,
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, Map<String, dynamic> order, int index) {
+  int get _totalPages {
+    return (_filteredOrders.length / _itemsPerPage).ceil();
+  }
+
+  Widget _buildOrderRow(BuildContext context, Map<String, dynamic> order, int index) {
     final theme = Theme.of(context);
-    final orderItems = order['order_items'] as List? ?? [];
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final status = order['status'] as String? ?? 'pending';
-    final totalAmount = (order['total_amount'] as num?)?.toDouble() ?? 0.0;
     final orderNumber = order['order_number'] as String? ?? 'N/A';
     final createdAt = order['created_at'] as String?;
-    final updatedAt = order['updated_at'] as String?;
-    final isExpanded = _expandedOrders.contains(index);
+    final statusText = _getStatusText(status);
+    final statusColor = _getStatusColor(status);
+    final orderDate = _formatOrderDate(createdAt);
 
-    // Get first product for header
-    final firstItem = orderItems.isNotEmpty ? orderItems[0] : null;
-    final productName = firstItem?['name'] as String? ?? 'Order #$orderNumber';
-
-    final timelineStages = _getTimelineStages(status, createdAt, updatedAt);
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? colorScheme.surfaceVariant : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Header section
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (isExpanded) {
-                  _expandedOrders.remove(index);
-                } else {
-                  _expandedOrders.add(index);
-                }
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  // Product image placeholder
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.shopping_bag,
-                      color: Colors.grey.shade400,
-                      size: 30,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Product name and status
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          productName,
-                          style: GoogleFonts.chakraPetch(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Status: ${_getStatusText(status)}',
-                          style: GoogleFonts.chakraPetch(
-                            fontSize: 14,
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Expand icon
-                  Icon(
-                    isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ],
+          // Order number
+          Expanded(
+            flex: 2,
+            child: Text(
+              orderNumber,
+              style: GoogleFonts.chakraPetch(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
-          // Timeline section (when expanded)
-          if (isExpanded) ...[
-            const Divider(height: 1),
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  ...timelineStages.asMap().entries.map((entry) {
-                    final isLast = entry.key == timelineStages.length - 1;
-                    return _buildTimelineStage(
-                      context,
-                      entry.value,
-                      isLast,
-                      theme,
-                    );
-                  }).toList(),
-                ],
+          // Order date
+          Expanded(
+            flex: 2,
+            child: Text(
+              orderDate,
+              style: GoogleFonts.chakraPetch(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface,
               ),
             ),
-            // Order details
-            const Divider(height: 1),
+          ),
+          // Status
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: statusColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  statusText,
+                  style: GoogleFonts.chakraPetch(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // More
+          Expanded(
+            flex: 1,
+            child: GestureDetector(
+              onTap: () {
+                // Navigate to order details or show bottom sheet
+                _showOrderDetails(context, order);
+              },
+              child: Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showOrderDetails(BuildContext context, Map<String, dynamic> order) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
             Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Order Details',
                     style: GoogleFonts.chakraPetch(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // Order items
-                  if (orderItems.isNotEmpty) ...[
-                    ...orderItems.map<Widget>((item) {
-                      final itemName = item['name'] as String? ?? 'N/A';
-                      final itemPrice = (item['price'] as num?)?.toDouble() ?? 0.0;
-                      final itemQuantity = (item['quantity'] as num?)?.toInt() ?? 0;
-                      final itemTotal = itemPrice * itemQuantity;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '$itemName x $itemQuantity',
-                                style: GoogleFonts.chakraPetch(
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '฿${itemTotal.toStringAsFixed(2)}',
-                              style: GoogleFonts.chakraPetch(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    const Divider(),
-                  ],
-                  // Total
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total',
-                        style: GoogleFonts.chakraPetch(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '฿${totalAmount.toStringAsFixed(2)}',
-                        style: GoogleFonts.chakraPetch(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // E-Receipt button
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/e-receipt',
-                          arguments: order,
-                        );
-                      },
-                      icon: const Icon(Icons.receipt_long),
-                      label: Text(
-                        'E-Receipt',
-                        style: GoogleFonts.chakraPetch(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
               ),
             ),
+            const Divider(),
+            // Order details
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailRow('Order Number', order['order_number'] as String? ?? 'N/A'),
+                    const SizedBox(height: 16),
+                    _buildDetailRow('Order Date', _formatOrderDate(order['created_at'] as String?)),
+                    const SizedBox(height: 16),
+                    _buildDetailRow('Status', _getStatusText(order['status'] as String? ?? 'pending')),
+                    const SizedBox(height: 16),
+                    _buildDetailRow('Total Amount', '฿${((order['total_amount'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2)}'),
+                    const SizedBox(height: 24),
+                    // Order items
+                    if (order['order_items'] != null) ...[
+                      Text(
+                        'Order Items',
+                        style: GoogleFonts.chakraPetch(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...((order['order_items'] as List).map<Widget>((item) {
+                        final itemName = item['name'] as String? ?? 'N/A';
+                        final itemPrice = (item['price'] as num?)?.toDouble() ?? 0.0;
+                        final itemQuantity = (item['quantity'] as num?)?.toInt() ?? 0;
+                        final itemTotal = itemPrice * itemQuantity;
+                        final colorScheme = Theme.of(context).colorScheme;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '$itemName x $itemQuantity',
+                                  style: GoogleFonts.chakraPetch(
+                                    fontSize: 14,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '฿${itemTotal.toStringAsFixed(2)}',
+                                style: GoogleFonts.chakraPetch(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList()),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            // E-Receipt button
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                      context,
+                      '/e-receipt',
+                      arguments: order,
+                    );
+                  },
+                  icon: const Icon(Icons.receipt_long),
+                  label: Text(
+                    'E-Receipt',
+                    style: GoogleFonts.chakraPetch(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.chakraPetch(
+            fontSize: 14,
+            color: colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.chakraPetch(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 
@@ -457,14 +385,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         centerTitle: true,
         title: Text(
           "Order History",
-          style: GoogleFonts.chakraPetch(fontSize: 25),
+          style: GoogleFonts.chakraPetch(fontSize: 23),
         ),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
           icon: const ImageIcon(
-            size: 30,
+            size: 25,
             AssetImage("assets/icons/back_arrow.png"),
           ),
         ),
@@ -472,80 +400,272 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       backgroundColor: theme.colorScheme.surface,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _orders.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.shopping_bag_outlined,
-                        size: 64,
-                        color: theme.colorScheme.onSurface.withOpacity(0.3),
+                      // Search bar
+                      Expanded(
+                        child: TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                              _currentPage = 1; // Reset to first page when searching
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search',
+                            hintStyle: GoogleFonts.chakraPetch(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                            filled: true,
+                            fillColor: theme.brightness == Brightness.dark
+                                ? theme.colorScheme.surfaceVariant
+                                : Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No orders yet',
-                        style: GoogleFonts.chakraPetch(
-                          fontSize: 18,
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      const SizedBox(width: 12),
+                      // Filter button
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          // TODO: Implement filter functionality
+                        },
+                        icon: Icon(
+                          Icons.tune,
+                          size: 20,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        label: Text(
+                          'Filter',
+                          style: GoogleFonts.chakraPetch(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          side: BorderSide(
+                            color: theme.dividerColor,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadOrders,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _orders.length,
-                    itemBuilder: (context, index) {
-                      return _buildOrderCard(context, _orders[index], index);
-                    },
+                ),
+                // Header row
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.dark
+                        ? theme.colorScheme.surfaceVariant
+                        : Colors.grey.shade200,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Order number',
+                          style: GoogleFonts.chakraPetch(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Order date',
+                          style: GoogleFonts.chakraPetch(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Status',
+                          style: GoogleFonts.chakraPetch(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          'More',
+                          style: GoogleFonts.chakraPetch(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                // Order list
+                Expanded(
+                  child: _filteredOrders.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 64,
+                                color: theme.colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _searchQuery.isEmpty
+                                    ? 'No orders yet'
+                                    : 'No orders found',
+                                style: GoogleFonts.chakraPetch(
+                                  fontSize: 18,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _loadOrders,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _paginatedOrders.length,
+                            itemBuilder: (context, index) {
+                              return _buildOrderRow(
+                                context,
+                                _paginatedOrders[index],
+                                index,
+                              );
+                            },
+                          ),
+                        ),
+                ),
+                // Pagination
+                if (_totalPages > 1)
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Previous button
+                        IconButton(
+                          onPressed: _currentPage > 1
+                              ? () {
+                                  setState(() {
+                                    _currentPage--;
+                                  });
+                                }
+                              : null,
+                          icon: Icon(
+                            Icons.chevron_left,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        // Page numbers
+                        ...List.generate(_totalPages, (index) {
+                          final page = index + 1;
+                          // Show first page, last page, current page, and pages around current
+                          if (page == 1 ||
+                              page == _totalPages ||
+                              (page >= _currentPage - 1 && page <= _currentPage + 1)) {
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _currentPage = page;
+                                });
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _currentPage == page
+                                      ? theme.colorScheme.primary
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '$page',
+                                  style: GoogleFonts.chakraPetch(
+                                    fontSize: 14,
+                                    color: _currentPage == page
+                                        ? theme.colorScheme.onPrimary
+                                        : theme.colorScheme.onSurface,
+                                    fontWeight: _currentPage == page
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else if (page == _currentPage - 2 || page == _currentPage + 2) {
+                            // Show ellipsis
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Text(
+                                '...',
+                                style: GoogleFonts.chakraPetch(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+                        }),
+                        // Next button
+                        IconButton(
+                          onPressed: _currentPage < _totalPages
+                              ? () {
+                                  setState(() {
+                                    _currentPage++;
+                                  });
+                                }
+                              : null,
+                          icon: Icon(
+                            Icons.chevron_right,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
     );
-  }
-}
-
-// Custom painter for dashed line
-class _DashedLinePainter extends CustomPainter {
-  final Color color;
-  final bool isDashed;
-
-  _DashedLinePainter({required this.color, required this.isDashed});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2;
-
-    if (isDashed) {
-      // Draw dashed line
-      const dashWidth = 4.0;
-      const dashSpace = 4.0;
-      double startY = 0;
-
-      while (startY < size.height) {
-        canvas.drawLine(
-          Offset(0, startY),
-          Offset(0, startY + dashWidth),
-          paint,
-        );
-        startY += dashWidth + dashSpace;
-      }
-    } else {
-      // Draw solid line
-      canvas.drawLine(
-        Offset(0, 0),
-        Offset(0, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedLinePainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.isDashed != isDashed;
   }
 }

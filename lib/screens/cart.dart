@@ -276,6 +276,18 @@ class _CartState extends ConsumerState<Cart> {
     });
 
     try {
+      // Check if user is logged in first
+      if (!AuthService().isLoggedIn) {
+        if (!mounted) return;
+        setState(() {
+          _isCheckingProfile = false;
+        });
+        // Navigate to onboarding page
+        Navigator.pushNamed(context, '/onboarding');
+        return;
+      }
+
+      // If logged in, check profile completeness
       final isComplete = await _checkProfileComplete();
       if (!mounted) return;
       
