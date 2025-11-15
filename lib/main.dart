@@ -14,6 +14,7 @@ import 'package:brand_store_app/screens/onboarding.dart';
 import 'package:brand_store_app/screens/settings_screen.dart';
 import 'package:brand_store_app/screens/admin_screen.dart';
 import 'package:brand_store_app/screens/order_success.dart';
+import 'package:brand_store_app/widgets/ipad_frame.dart';
 import 'package:brand_store_app/config/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,6 +134,13 @@ class MyApp extends ConsumerWidget {
         );
       },
       home: const MainScreen(),
+      builder: (context, child) {
+        // Wrap with iPad frame on desktop
+        if (child != null) {
+          return iPadFrame(child: child);
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }
