@@ -471,26 +471,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   // ),
 
                   // Clear Cache
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.delete_outline,
-                    title: 'Clear Cache',
-                    subtitle: 'Clear all stored data',
-                    onTap: () {
-                      _showClearCacheDialog(context);
-                    },
-                  ),
-
-                  // Get Help
                   // _buildMenuItem(
                   //   context,
-                  //   icon: Icons.help_outline,
-                  //   title: 'Get Help',
-                  //   subtitle: 'Contact support',
+                  //   icon: Icons.delete_outline,
+                  //   title: 'Clear Cache',
+                  //   subtitle: 'Clear all stored data',
                   //   onTap: () {
-                  //     // TODO: Navigate to help screen
+                  //     _showClearCacheDialog(context);
                   //   },
                   // ),
+
+                  // Get Help
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.help_outline,
+                    title: 'Get Help',
+                    subtitle: 'Contact support',
+                    onTap: () {
+                      Navigator.pushNamed(context, '/get-help');
+                    },
+                  ),
 
                   // Give Feedback
                   // _buildMenuItem(

@@ -17,6 +17,7 @@ import 'package:brand_store_app/screens/order_success.dart';
 import 'package:brand_store_app/screens/order_history_screen.dart';
 import 'package:brand_store_app/screens/e_receipt_screen.dart';
 import 'package:brand_store_app/screens/edit_profile_screen.dart';
+import 'package:brand_store_app/screens/get_help_screen.dart';
 import 'package:brand_store_app/widgets/ipad_frame.dart';
 import 'package:brand_store_app/config/supabase_config.dart';
 import 'package:flutter/material.dart';
@@ -84,6 +85,7 @@ class MyApp extends ConsumerWidget {
           return EReceiptScreen(order: args);
         },
         '/edit-profile': (context) => const EditProfileScreen(),
+        '/get-help': (context) => const GetHelpScreen(),
       },
       initialRoute: '/MainScreen',
       onGenerateRoute: (settings) {
@@ -151,6 +153,10 @@ class MyApp extends ConsumerWidget {
           return MaterialPageRoute(
             builder: (context) => const EditProfileScreen(),
           );
+        } else if (settings.name == '/get-help') {
+          return MaterialPageRoute(
+            builder: (context) => const GetHelpScreen(),
+          );
         }
         // Default fallback route
         return MaterialPageRoute(
@@ -169,7 +175,7 @@ class MyApp extends ConsumerWidget {
                 child: SnowFallAnimation(
                   config: SnowfallConfig(
                     numberOfSnowflakes: 50,
-                    speed: 1.0,
+                    speed: 0.6,
                     useEmoji: true,
                     customEmojis: ['❄️', '❅', '❆'],
                   ),

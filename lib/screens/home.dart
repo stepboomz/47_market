@@ -25,6 +25,8 @@ class _HomeState extends ConsumerState<Home> {
   bool isCategoryLoading = true;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _promotionalImageUrl;
+  bool _isLoadingPromo = true;
 
   @override
   void initState() {
@@ -32,6 +34,7 @@ class _HomeState extends ConsumerState<Home> {
     _loadData();
     _loadCategories();
   }
+
 
   @override
   void dispose() {
@@ -220,20 +223,20 @@ class _HomeState extends ConsumerState<Home> {
                         fit: BoxFit.cover,
                       ),
                       const SizedBox(width: 8),
-                      Padding(
-      padding: const EdgeInsets.only(top: 3), // <-- ขยับลง
-      child: Text(
-        '47Market',
-        style: GoogleFonts.chakraPetch(
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-          color: theme.colorScheme.onSurface,
-          letterSpacing: 1.5,
-            decoration: TextDecoration.lineThrough, // <-- ขีดฆ่า
-    decorationThickness: 1,        
-        ),
-      ),
-    ),
+    //                   Padding(
+    //   padding: const EdgeInsets.only(top: 3), // <-- ขยับลง
+    //   child: Text(
+    //     '47Market',
+    //     style: GoogleFonts.chakraPetch(
+    //       fontSize: 17,
+    //       fontWeight: FontWeight.bold,
+    //       color: theme.colorScheme.onSurface,
+    //       letterSpacing: 1.5,
+    //         decoration: TextDecoration.lineThrough, // <-- ขีดฆ่า
+    // decorationThickness: 1,        
+    //     ),
+    //   ),
+    // ),
                     ],
                   ),
                 ),
@@ -271,6 +274,8 @@ class _HomeState extends ConsumerState<Home> {
                 ),
               ],
             ),
+          
+          
           ],
         ),
       ),

@@ -75,7 +75,7 @@ class _CartState extends ConsumerState<Cart> {
                   selectedShirt.name,
                   style: GoogleFonts.chakraPetch(
                     fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.normal,
                     color: theme.colorScheme.onSurface,
                   ),
                   maxLines: 1,
@@ -387,7 +387,11 @@ class _CartState extends ConsumerState<Cart> {
                         ),
                         TextButton.icon(
                           onPressed: () {
-                            // Navigate to add more items
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/main',
+                              (route) => false,
+                            );
                           },
                           icon: const Icon(Icons.add, size: 18),
                           label: const Text('Add More'),
@@ -403,7 +407,7 @@ class _CartState extends ConsumerState<Cart> {
                   // รายการสินค้า
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                       itemCount: cartItems.length,
                       itemBuilder: (context, index) {
                         return _buildCartItem(cartItems[index]);
@@ -449,10 +453,12 @@ class _CartState extends ConsumerState<Cart> {
                         ],
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Divider(
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.1),
-                              height: 1),
+                          child: CustomPaint(
+                            size: const Size(double.infinity, 1),
+                            painter: DashedLinePainter(
+                              color: theme.colorScheme.onSurface.withOpacity(0.2),
+                            ),
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -632,11 +638,11 @@ class _CartState extends ConsumerState<Cart> {
                     size: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Text(
                   'Promo Code',
                   style: GoogleFonts.chakraPetch(
-                    fontSize: 16,
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: theme.colorScheme.onSurface,
                   ),
@@ -823,4 +829,39 @@ class _CartState extends ConsumerState<Cart> {
       ],
     );
   }
+}
+
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+
+  DashedLinePainter({
+    required this.color,
+    this.strokeWidth = 1.0,
+    this.dashWidth = 5.0,
+    this.dashSpace = 3.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    double startX = 0;
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, size.height / 2),
+        Offset(startX + dashWidth, size.height / 2),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

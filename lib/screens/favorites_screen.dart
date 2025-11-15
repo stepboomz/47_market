@@ -12,30 +12,30 @@ class FavoritesScreen extends ConsumerWidget {
     final favorites = ref.watch(favoriteProvider);
 
     return Scaffold(
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false,
-      //   backgroundColor: Theme.of(context).colorScheme.surface,
-      //   foregroundColor: Theme.of(context).colorScheme.inverseSurface,
-      //   elevation: 0,
-      //   forceMaterialTransparency: true,
-      //   toolbarHeight: 100,
-      //   leadingWidth: 100,
-      //   primary: true,
-      //   centerTitle: true,
-      //   title: Text(
-      //     "Favorite ",
-      //     style: GoogleFonts.chakraPetch(fontSize: 25),
-      //   ),
-      //   // leading: IconButton(
-      //   //   onPressed: () {
-      //   //     Navigator.pop(context);
-      //   //   },
-      //   //   icon: const ImageIcon(
-      //   //     size: 30,
-      //   //     AssetImage("assets/icons/back_arrow.png"),
-      //   //   ),
-      //   // ),
-      // ),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.inverseSurface,
+        elevation: 0,
+        forceMaterialTransparency: true,
+        toolbarHeight: 100,
+        leadingWidth: 100,
+        primary: true,
+        centerTitle: true,
+        title: Text(
+          "Favorite ",
+          style: GoogleFonts.chakraPetch(fontSize: 25),
+        ),
+        // leading: IconButton(
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        //   icon: const ImageIcon(
+        //     size: 30,
+        //     AssetImage("assets/icons/back_arrow.png"),
+        //   ),
+        // ),
+      ),
       body: favorites.isEmpty
           ? Center(
               child: Column(
