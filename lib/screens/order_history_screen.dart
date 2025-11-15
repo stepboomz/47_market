@@ -254,6 +254,32 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     const SizedBox(height: 16),
                     _buildDetailRow('Status', _getStatusText(order['status'] as String? ?? 'pending')),
                     const SizedBox(height: 16),
+                    // Calculate subtotal (sum of all items)
+                    if (order['order_items'] != null) ...[
+                      Builder(
+                        builder: (context) {
+                          final orderItems = order['order_items'] as List;
+                          final subtotal = orderItems.fold<double>(
+                            0.0,
+                            (sum, item) {
+                              final itemPrice = (item['price'] as num?)?.toDouble() ?? 0.0;
+                              final itemQuantity = (item['quantity'] as num?)?.toInt() ?? 0;
+                              return sum + (itemPrice * itemQuantity);
+                            },
+                          );
+                          return _buildDetailRow('Subtotal', '฿${subtotal.toStringAsFixed(2)}');
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    // Show discount if exists
+                    if (((order['discount_amount'] as num?)?.toDouble() ?? 0.0) > 0) ...[
+                      _buildDetailRow(
+                        'Discount',
+                        '-฿${((order['discount_amount'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2)}',
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     _buildDetailRow('Total Amount', '฿${((order['total_amount'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2)}'),
                     const SizedBox(height: 24),
                     // Order items
@@ -362,7 +388,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           value,
           style: GoogleFonts.chakraPetch(
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.normal,
             color: colorScheme.onSurface,
           ),
         ),

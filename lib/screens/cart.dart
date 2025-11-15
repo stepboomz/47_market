@@ -1,9 +1,11 @@
 import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:brand_store_app/services/auth_service.dart';
+import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class Cart extends ConsumerStatefulWidget {
   const Cart({super.key});
@@ -14,6 +16,11 @@ class Cart extends ConsumerStatefulWidget {
 
 class _CartState extends ConsumerState<Cart> {
   bool _isCheckingProfile = false;
+  final TextEditingController _promoCodeController = TextEditingController();
+  Map<String, dynamic>? _appliedPromoCode;
+  bool _isValidatingPromoCode = false;
+  String? _promoCodeError;
+  bool _showPromoCodeInput = false; // Control visibility of promo code input
 
   Widget _buildCartItem(CartItem cartItem) {
     final selectedShirt = cartItem.shirt;
@@ -297,7 +304,22 @@ class _CartState extends ConsumerState<Cart> {
       });
 
       if (isComplete) {
-        Navigator.pushNamed(context, '/checkout');
+        // Pass promo code info to checkout
+        final discount = _appliedPromoCode?['discount_amount'];
+        final discountValue = discount != null 
+            ? ((discount is num) ? discount.toDouble() : (discount as double? ?? 0.0))
+            : null;
+        
+        print('Cart sending to checkout: promoCodeId=${_appliedPromoCode?['id']}, discountAmount=$discountValue');
+        
+        Navigator.pushNamed(
+          context,
+          '/checkout',
+          arguments: {
+            'promoCodeId': _appliedPromoCode?['id'],
+            'discountAmount': discountValue,
+          },
+        );
       } else {
         _showProfileIncompleteDialog();
       }
@@ -311,15 +333,17 @@ class _CartState extends ConsumerState<Cart> {
   }
 
   @override
+  void dispose() {
+    _promoCodeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cartItems = ref.watch(cartProvider);
     final totalCost = ref.watch(cartProvider.notifier).totalCost;
-    final shippingCharge = 0.0;
-    final subtotal = totalCost + shippingCharge;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bgColor =
-        isDark ? theme.colorScheme.background : const Color(0xFFF5F5F5);
 
     return Scaffold(
       // backgroundColor: bgColor,
@@ -388,47 +412,7 @@ class _CartState extends ConsumerState<Cart> {
                   ),
 
                   // Apply Promo Code
-                  Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.red.shade900.withOpacity(0.3)
-                                : Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.local_offer_outlined,
-                            color: Colors.red.shade400,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Apply Promo Code',
-                          style: GoogleFonts.chakraPetch(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const Spacer(),
-                        Icon(Icons.chevron_right,
-                            color:
-                                theme.colorScheme.onSurface.withOpacity(0.3)),
-                      ],
-                    ),
-                  ),
+                  _buildPromoCodeSection(theme, isDark, totalCost),
 
                   // Bill Details
                   Container(
@@ -454,6 +438,15 @@ class _CartState extends ConsumerState<Cart> {
                             '฿${totalCost.toStringAsFixed(0)}', theme),
                         const SizedBox(height: 8),
                         _buildBillRow('Shipping Charges', 'Free', theme),
+                        if (_appliedPromoCode != null) ...[
+                          const SizedBox(height: 8),
+                          _buildBillRow(
+                            'Discount (${_appliedPromoCode!['code']})',
+                            '-฿${(_appliedPromoCode!['discount_amount'] as num).toDouble().toStringAsFixed(0)}',
+                            theme,
+                            isDiscount: true,
+                          ),
+                        ],
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Divider(
@@ -473,7 +466,7 @@ class _CartState extends ConsumerState<Cart> {
                               ),
                             ),
                             Text(
-                              '฿${subtotal.toStringAsFixed(0)}',
+                              '฿${_calculateFinalTotal(totalCost).toStringAsFixed(0)}',
                               style: GoogleFonts.chakraPetch(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -509,7 +502,7 @@ class _CartState extends ConsumerState<Cart> {
                                     ),
                                   )
                                 : Text(
-                                    'Proceed To Pay · ฿${subtotal.toStringAsFixed(0)}',
+                                    'Proceed To Pay · ฿${_calculateFinalTotal(totalCost).toStringAsFixed(0)}',
                                     style: GoogleFonts.chakraPetch(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w600,
@@ -526,7 +519,289 @@ class _CartState extends ConsumerState<Cart> {
     );
   }
 
-  Widget _buildBillRow(String label, String value, ThemeData theme) {
+  double _calculateFinalTotal(double totalCost) {
+    if (_appliedPromoCode != null) {
+      final discount = (_appliedPromoCode!['discount_amount'] as num).toDouble();
+      return (totalCost - discount).clamp(0.0, double.infinity);
+    }
+    return totalCost;
+  }
+
+  Future<void> _applyPromoCode(String code, double totalAmount) async {
+    if (code.trim().isEmpty) {
+      setState(() {
+        _promoCodeError = 'Please enter a promo code';
+        _appliedPromoCode = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isValidatingPromoCode = true;
+      _promoCodeError = null;
+    });
+
+    try {
+      final result = await SupabaseService.validatePromoCode(code, totalAmount);
+      
+      if (!mounted) return;
+
+      if (result == null || result.containsKey('error')) {
+        setState(() {
+          _promoCodeError = result?['error'] ?? 'Invalid promo code';
+          _appliedPromoCode = null;
+          _isValidatingPromoCode = false;
+        });
+        ShadToaster.of(context).show(
+          ShadToast(
+            title: const Text('Promo Code Error'),
+            description: Text(_promoCodeError ?? 'Invalid promo code'),
+          ),
+        );
+      } else {
+        setState(() {
+          _appliedPromoCode = result;
+          _promoCodeError = null;
+          _isValidatingPromoCode = false;
+        });
+        ShadToaster.of(context).show(
+          ShadToast(
+            title: const Text('Promo Code Applied'),
+            description: Text('Discount: ฿${(result['discount_amount'] as num).toDouble().toStringAsFixed(0)}'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _promoCodeError = 'Error validating promo code';
+        _appliedPromoCode = null;
+        _isValidatingPromoCode = false;
+      });
+      ShadToaster.of(context).show(
+        ShadToast(
+          title: const Text('Error'),
+          description: const Text('Failed to validate promo code'),
+        ),
+      );
+    }
+  }
+
+  void _removePromoCode() {
+    setState(() {
+      _appliedPromoCode = null;
+      _promoCodeController.clear();
+      _promoCodeError = null;
+      _showPromoCodeInput = false; // Hide input when removing promo code
+    });
+  }
+
+  Widget _buildPromoCodeSection(ThemeData theme, bool isDark, double totalCost) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with clickable button
+          GestureDetector(
+            onTap: () {
+              if (_appliedPromoCode == null) {
+                setState(() {
+                  _showPromoCodeInput = !_showPromoCodeInput;
+                });
+              }
+            },
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.red.shade900.withOpacity(0.3)
+                        : Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.local_offer_outlined,
+                    color: Colors.red.shade400,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Promo Code',
+                  style: GoogleFonts.chakraPetch(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                if (_appliedPromoCode == null) ...[
+                  const Spacer(),
+                  Icon(
+                    _showPromoCodeInput ? Icons.expand_less : Icons.expand_more,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_appliedPromoCode != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.green.shade900.withOpacity(0.2)
+                    : Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.green.shade300,
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _appliedPromoCode!['code'] as String,
+                          style: GoogleFonts.chakraPetch(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        if (_appliedPromoCode!['description'] != null)
+                          Text(
+                            _appliedPromoCode!['description'] as String,
+                            style: GoogleFonts.chakraPetch(
+                              fontSize: 12,
+                              color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _removePromoCode,
+                    child: Text(
+                      'Remove',
+                      style: GoogleFonts.chakraPetch(
+                        fontSize: 12,
+                        color: Colors.red.shade400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (_showPromoCodeInput)
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _promoCodeController,
+                        style: GoogleFonts.chakraPetch(
+                          fontSize: 14,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Enter promo code',
+                          hintStyle: GoogleFonts.chakraPetch(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? theme.colorScheme.surface
+                              : Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: _promoCodeError != null
+                                  ? Colors.red
+                                  : theme.colorScheme.onSurface.withOpacity(0.2),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: _promoCodeError != null
+                                  ? Colors.red
+                                  : theme.colorScheme.onSurface.withOpacity(0.2),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Colors.red.shade400,
+                              width: 2,
+                            ),
+                          ),
+                          errorText: _promoCodeError,
+                          errorStyle: GoogleFonts.chakraPetch(
+                            fontSize: 12,
+                            color: Colors.red,
+                          ),
+                        ),
+                        textCapitalization: TextCapitalization.characters,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _isValidatingPromoCode
+                          ? null
+                          : () => _applyPromoCode(
+                                _promoCodeController.text.trim(),
+                                totalCost,
+                              ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade400,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      ),
+                      child: _isValidatingPromoCode
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: SpinKitDancingSquare(
+                                color: Colors.white,
+                                size: 20.0,
+                              ),
+                            )
+                          : Text(
+                              'Apply',
+                              style: GoogleFonts.chakraPetch(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBillRow(String label, String value, ThemeData theme, {bool isDiscount = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

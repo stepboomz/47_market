@@ -106,6 +106,7 @@ class MyApp extends ConsumerWidget {
           );
         } else if (settings.name == '/checkout') {
           return MaterialPageRoute(
+            settings: settings, // Preserve settings including arguments
             builder: (context) => const Checkout(),
           );
         } else if (settings.name == '/login') {

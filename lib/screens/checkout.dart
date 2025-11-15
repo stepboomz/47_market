@@ -22,6 +22,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
   bool showAddressForm = false;
   bool isLoadingAddress = true;
   String selectedPaymentMethod = 'qr'; // 'qr' or 'cash'
+  String? promoCodeId;
+  double? discountAmount;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -34,6 +36,52 @@ class _CheckoutState extends ConsumerState<Checkout> {
   void initState() {
     super.initState();
     _loadSavedAddress();
+  }
+
+  bool _hasLoadedPromoCode = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Get promo code info from arguments (moved here because context is available)
+    // Only load once to avoid multiple calls
+    if (!_hasLoadedPromoCode) {
+      print('Checkout didChangeDependencies: Loading promo code from arguments...');
+      // Use WidgetsBinding to wait for route to be ready
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final route = ModalRoute.of(context);
+        print('Checkout didChangeDependencies: route=$route');
+        if (route != null) {
+          final args = route.settings.arguments as Map<String, dynamic>?;
+          print('Checkout didChangeDependencies: args=$args');
+          if (args != null) {
+            promoCodeId = args['promoCodeId'] as String?;
+            // Handle both double and num types
+            final discount = args['discountAmount'];
+            print('Checkout didChangeDependencies: discount (raw)=$discount, type=${discount.runtimeType}');
+            if (discount != null) {
+              discountAmount = (discount is num) ? discount.toDouble() : (discount as double?);
+            }
+            _hasLoadedPromoCode = true;
+            // Debug: print to verify
+            print('Checkout received promo code: promoCodeId=$promoCodeId, discountAmount=$discountAmount');
+            print('Checkout state: promoCodeId=$promoCodeId, discountAmount=$discountAmount');
+            // Trigger rebuild to show discount
+            if (mounted) {
+              print('Checkout: Calling setState to rebuild UI...');
+              setState(() {});
+            }
+          } else {
+            print('Checkout didChangeDependencies: No arguments found in route');
+          }
+        } else {
+          print('Checkout didChangeDependencies: Route is null');
+        }
+      });
+    } else {
+      print('Checkout didChangeDependencies: Already loaded promo code, skipping');
+    }
   }
 
   Future<void> _loadSavedAddress() async {
@@ -103,7 +151,18 @@ class _CheckoutState extends ConsumerState<Checkout> {
     }
   }
 
-  Future<void> _processCashPayment(double totalAmount) async {
+  double _calculateFinalTotal(double totalCost) {
+    print('_calculateFinalTotal: totalCost=$totalCost, discountAmount=$discountAmount');
+    if (discountAmount != null && discountAmount! > 0) {
+      final finalTotal = (totalCost - discountAmount!).clamp(0.0, double.infinity);
+      print('_calculateFinalTotal: finalTotal=$finalTotal (after discount)');
+      return finalTotal;
+    }
+    print('_calculateFinalTotal: no discount, returning totalCost=$totalCost');
+    return totalCost;
+  }
+
+  Future<void> _processCashPayment(double finalTotal) async {
     final items = ref
         .read(cartProvider)
         .map((it) => {
@@ -115,16 +174,22 @@ class _CheckoutState extends ConsumerState<Checkout> {
             })
         .toList();
 
+    // Calculate original total (before discount)
+    final originalTotal = ref.read(cartProvider.notifier).totalCost;
+
     try {
       // Create order for cash payment
+      // Note: totalAmount should be original total, createOrder will apply discount
       final orderResult = await SupabaseService.createOrder(
         customerName: savedName ?? '',
         customerPhone: savedPhone ?? '',
         customerAddress: savedAddress ?? '',
-        totalAmount: totalAmount,
+        totalAmount: originalTotal,
         items: items,
         slipImageUrl: null, // No slip for cash payment
         paymentMethod: 'cash',
+        promoCodeId: promoCodeId,
+        discountAmount: discountAmount,
       );
 
       if (orderResult == null) {
@@ -154,7 +219,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
           '/order-success',
           arguments: {
             'orderNumber': orderNumber,
-            'totalAmount': totalAmount,
+            'totalAmount': finalTotal,
           },
         );
       }
@@ -193,13 +258,17 @@ class _CheckoutState extends ConsumerState<Checkout> {
         customerPhone: savedPhone ?? '',
         customerAddress: savedAddress ?? '',
         orderItems: items,
+        promoCodeId: promoCodeId,
+        discountAmount: discountAmount,
       ),
     );
   }
 
-  void _showQRCodeModal(double totalAmount) {
+  void _showQRCodeModal(double finalTotal) {
     // Save parent context before showing modal
     final parentContext = context;
+    // Use finalTotal (after discount) for QR code
+    final qrAmount = finalTotal;
 
     showModalBottomSheet(
       context: context,
@@ -268,7 +337,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   child: QRCodeGenerate(
                     promptPayId:
                         "0957728931", // You can change this to your PromptPay ID
-                    amount: totalAmount,
+                    amount: qrAmount,
                     width: 250,
                     height: 250,
                   ),
@@ -334,13 +403,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        // Calculate total amount and prepare order items
-                        double totalAmount = 0;
-                        for (var item in ref.read(cartProvider)) {
-                          totalAmount += (item.selectedVariant?.price ??
-                                  item.shirt.price) *
-                              item.quantity;
-                        }
+                        // Calculate original total (before discount) for order creation
+                        final originalTotalForOrder = ref.read(cartProvider.notifier).totalCost;
                         final items = ref
                             .read(cartProvider)
                             .map((it) => {
@@ -367,7 +431,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                               backgroundColor: Colors.transparent,
                               builder: (context) => SlipVerification(
                                 orderNumber: '', // Will be generated after verification
-                                totalAmount: totalAmount,
+                                totalAmount: originalTotalForOrder,
                                 customerName: savedName ?? '',
                                 customerPhone: savedPhone ?? '',
                                 customerAddress: savedAddress ?? '',
@@ -969,6 +1033,44 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     )
                   ],
                 ),
+                Builder(
+                  builder: (context) {
+                    print('Checkout build: discountAmount=$discountAmount, promoCodeId=$promoCodeId');
+                    if (discountAmount != null && discountAmount! > 0) {
+                      print('Checkout build: Showing discount row with amount=${discountAmount!.toStringAsFixed(0)}');
+                      return Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Text(
+                                "Discount",
+                                style: GoogleFonts.chakraPetch(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .inverseSurface
+                                      .withOpacity(0.7),
+                                  fontSize: MediaQuery.textScalerOf(context).scale(15),
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                '-฿${discountAmount!.toStringAsFixed(0)}',
+                                style: GoogleFonts.chakraPetch(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.green),
+                              )
+                            ],
+                          ),
+                        ],
+                      );
+                    } else {
+                      print('Checkout build: No discount to show (discountAmount=$discountAmount)');
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -985,10 +1087,17 @@ class _CheckoutState extends ConsumerState<Checkout> {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      '\฿${(ref.watch(cartProvider.notifier).totalCost + 0).toStringAsFixed(0)}',
-                      style: GoogleFonts.chakraPetch(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                    Builder(
+                      builder: (context) {
+                        final totalCost = ref.watch(cartProvider.notifier).totalCost;
+                        final finalTotal = _calculateFinalTotal(totalCost);
+                        print('Checkout build Total Payment: totalCost=$totalCost, discountAmount=$discountAmount, finalTotal=$finalTotal');
+                        return Text(
+                          '\฿${finalTotal.toStringAsFixed(0)}',
+                          style: GoogleFonts.chakraPetch(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        );
+                      },
                     )
                   ],
                 ),
@@ -1035,14 +1144,14 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                           item.shirt.price) *
                                       item.quantity;
                             }
-                            // Add delivery fee (assuming 0 for free delivery)
-                            totalAmount += 0;
+                            // Apply discount if available
+                            final finalTotal = _calculateFinalTotal(totalAmount);
 
                             // Show different modal based on selected payment method
                             if (selectedPaymentMethod == 'cash') {
-                              _processCashPayment(totalAmount);
+                              _processCashPayment(finalTotal);
                             } else {
-                              _showQRCodeModal(totalAmount);
+                              _showQRCodeModal(finalTotal);
                             }
                           }
                         : null,

@@ -33,13 +33,17 @@ class EReceiptScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final orderItems = order['order_items'] as List? ?? [];
     final totalAmount = (order['total_amount'] as num?)?.toDouble() ?? 0.0;
+    final discountAmount = (order['discount_amount'] as num?)?.toDouble() ?? 0.0;
     final orderNumber = order['order_number'] as String? ?? 'N/A';
     final createdAt = order['created_at'] as String?;
     final transRef = order['trans_ref'] as String? ?? '';
     
-    // Calculate tax (assuming 7% VAT)
+    // Calculate subtotal (before discount) = totalAmount + discountAmount
+    final subtotal = totalAmount + discountAmount;
+    
+    // Calculate tax (assuming 7% VAT) - tax is calculated on subtotal before discount
     final taxRate = 0.07;
-    final taxAmount = totalAmount * taxRate / (1 + taxRate);
+    final taxAmount = subtotal * taxRate / (1 + taxRate);
 
     return Scaffold(
       backgroundColor: isDark ? colorScheme.background : Colors.grey.shade100,
@@ -233,6 +237,51 @@ class EReceiptScreen extends StatelessWidget {
                       _buildDashedLine(context),
                       
                       // Summary Section
+                      // Subtotal (before discount)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Subtotal',
+                            style: GoogleFonts.chakraPetch(
+                              fontSize: 12,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            _formatPrice(subtotal),
+                            style: GoogleFonts.chakraPetch(
+                              fontSize: 12,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Discount (if exists)
+                      if (discountAmount > 0) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Discount',
+                              style: GoogleFonts.chakraPetch(
+                                fontSize: 12,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              '-${_formatPrice(discountAmount)}',
+                              style: GoogleFonts.chakraPetch(
+                                fontSize: 12,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                      // Total (after discount)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -254,46 +303,46 @@ class EReceiptScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Cash',
-                            style: GoogleFonts.chakraPetch(
-                              fontSize: 12,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          Text(
-                            _formatPrice(totalAmount),
-                            style: GoogleFonts.chakraPetch(
-                              fontSize: 12,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Change',
-                            style: GoogleFonts.chakraPetch(
-                              fontSize: 12,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          Text(
-                            _formatPrice(0.0),
-                            style: GoogleFonts.chakraPetch(
-                              fontSize: 12,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
+                      // const SizedBox(height: 6),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     Text(
+                      //       'Cash',
+                      //       style: GoogleFonts.chakraPetch(
+                      //         fontSize: 12,
+                      //         color: colorScheme.onSurface,
+                      //       ),
+                      //     ),
+                      //     Text(
+                      //       _formatPrice(totalAmount),
+                      //       style: GoogleFonts.chakraPetch(
+                      //         fontSize: 12,
+                      //         color: colorScheme.onSurface,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // const SizedBox(height: 4),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     Text(
+                      //       'Change',
+                      //       style: GoogleFonts.chakraPetch(
+                      //         fontSize: 12,
+                      //         color: colorScheme.onSurface,
+                      //       ),
+                      //     ),
+                      //     Text(
+                      //       _formatPrice(0.0),
+                      //       style: GoogleFonts.chakraPetch(
+                      //         fontSize: 12,
+                      //         color: colorScheme.onSurface,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                       
                       // Dashed line
                       _buildDashedLine(context),

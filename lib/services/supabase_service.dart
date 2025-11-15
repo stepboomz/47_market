@@ -277,6 +277,72 @@ class SupabaseService {
     }
   }
 
+  // Promo Codes
+  static Future<Map<String, dynamic>?> validatePromoCode(
+    String code,
+    double totalAmount,
+  ) async {
+    try {
+      final now = DateTime.now().toIso8601String();
+      final response = await _client
+          .from('promo_codes')
+          .select()
+          .eq('code', code.toUpperCase())
+          .eq('is_active', true)
+          .gte('end_date', now)
+          .lte('start_date', now)
+          .single();
+
+      // Check usage limit
+      final usedCount = (response['used_count'] as num?)?.toInt() ?? 0;
+      final usageLimit = response['usage_limit'] as num?;
+      if (usageLimit != null && usedCount >= usageLimit.toInt()) {
+        return {'error': 'Promo code has reached its usage limit'};
+      }
+
+      // Check minimum purchase amount
+      final minPurchase = (response['min_purchase_amount'] as num?)?.toDouble() ?? 0.0;
+      if (totalAmount < minPurchase) {
+        return {
+          'error':
+              'Minimum purchase amount of ฿${minPurchase.toStringAsFixed(0)} required'
+        };
+      }
+
+      // Calculate discount
+      double discountAmount = 0.0;
+      final discountType = response['discount_type'] as String;
+      final discountValue = (response['discount_value'] as num).toDouble();
+
+      if (discountType == 'percentage') {
+        discountAmount = totalAmount * (discountValue / 100);
+        final maxDiscount = response['max_discount_amount'] as num?;
+        if (maxDiscount != null && discountAmount > maxDiscount.toDouble()) {
+          discountAmount = maxDiscount.toDouble();
+        }
+      } else if (discountType == 'fixed') {
+        discountAmount = discountValue;
+        if (discountAmount > totalAmount) {
+          discountAmount = totalAmount;
+        }
+      }
+
+      return {
+        'id': response['id'],
+        'code': response['code'],
+        'description': response['description'],
+        'discount_type': discountType,
+        'discount_value': discountValue,
+        'discount_amount': discountAmount,
+        'min_purchase_amount': minPurchase,
+        'max_discount_amount': response['max_discount_amount'],
+      };
+    } catch (e) {
+      print('Error validating promo code: $e');
+      return {'error': 'Invalid promo code'};
+    }
+  }
+
   // Orders
   static Future<Map<String, String>?> createOrder({
     required String customerName,
@@ -287,6 +353,8 @@ class SupabaseService {
     String? transRef,
     String? slipImageUrl,
     String? paymentMethod, // 'qr' or 'cash'
+    String? promoCodeId, // UUID of promo code
+    double? discountAmount, // Discount amount applied
   }) async {
     try {
       final String orderId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -325,7 +393,49 @@ class SupabaseService {
         orderData['payment_method'] = paymentMethod;
       }
 
+      // Add promo code info if provided
+      print('createOrder: promoCodeId=$promoCodeId, discountAmount=$discountAmount');
+      if (promoCodeId != null && promoCodeId.isNotEmpty) {
+        orderData['promo_code_id'] = promoCodeId;
+        print('createOrder: Added promo_code_id to orderData');
+      }
+      if (discountAmount != null && discountAmount > 0) {
+        orderData['discount_amount'] = discountAmount;
+        // Subtract discount from total_amount
+        orderData['total_amount'] = totalAmount - discountAmount;
+        print('createOrder: Added discount_amount=$discountAmount, new total_amount=${orderData['total_amount']}');
+      }
+
       await _client.from('orders').insert(orderData);
+      print('createOrder: Order inserted successfully');
+
+      // Update promo code used_count if promo code was used
+      if (promoCodeId != null && promoCodeId.isNotEmpty) {
+        try {
+          print('createOrder: Updating promo code used_count for promoCodeId=$promoCodeId');
+          final currentCode = await _client
+              .from('promo_codes')
+              .select('used_count')
+              .eq('id', promoCodeId)
+              .single();
+          print('createOrder: Current promo code data: $currentCode');
+          final currentCount = (currentCode['used_count'] as int? ?? 0);
+          print('createOrder: Current used_count=$currentCount, will update to ${currentCount + 1}');
+          
+          final updateResult = await _client
+              .from('promo_codes')
+              .update({'used_count': currentCount + 1})
+              .eq('id', promoCodeId)
+              .select();
+          
+          print('createOrder: Promo code updated successfully: $updateResult');
+        } catch (e) {
+          print('Error updating promo code usage: $e');
+          print('Error stack trace: ${StackTrace.current}');
+        }
+      } else {
+        print('createOrder: No promo code to update (promoCodeId is null or empty)');
+      }
 
       final orderItems = items
           .map((e) => {

@@ -17,6 +17,8 @@ class SlipVerification extends ConsumerStatefulWidget {
   final String customerPhone;
   final String customerAddress;
   final List<Map<String, dynamic>> orderItems;
+  final String? promoCodeId;
+  final double? discountAmount;
 
   const SlipVerification({
     super.key,
@@ -26,6 +28,8 @@ class SlipVerification extends ConsumerStatefulWidget {
     required this.customerPhone,
     required this.customerAddress,
     required this.orderItems,
+    this.promoCodeId,
+    this.discountAmount,
   });
 
   @override
