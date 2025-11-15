@@ -20,7 +20,7 @@ class Onboarding extends ConsumerWidget {
                   width: double.infinity,
                   decoration: const BoxDecoration(
                       image: DecorationImage(
-                          image: AssetImage("assets/images/cover.jpeg"),
+                          image: AssetImage("assets/images/cover.jpe"),
                           fit: BoxFit.cover),
                       borderRadius: BorderRadius.only(
                         bottomRight: Radius.circular(50),
@@ -55,7 +55,7 @@ class Onboarding extends ConsumerWidget {
                   children: [
                     const Spacer(),
                     Text(
-                      "Find The\nBest Collections",
+                      "All You Need\nOne app",
                       style: GoogleFonts.chakraPetch(
                           height: 1.2,
                           color: Theme.of(context).colorScheme.inverseSurface,
@@ -66,7 +66,7 @@ class Onboarding extends ConsumerWidget {
                       height: 10,
                     ),
                     Text(
-                      "Get your dream item easily with FashionHub\nand get other interesting offer",
+                      "Fresh snacks and daily essentials delivered \nin minutes.",
                       style: GoogleFonts.chakraPetch(
                           fontSize: MediaQuery.textScalerOf(context).scale(12),
                           fontWeight: FontWeight.w300,
@@ -118,7 +118,7 @@ class Onboarding extends ConsumerWidget {
                               );
                             },
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: Colors.red.shade400,
                               side: const BorderSide(
                                   width: 1, color: Colors.orange),
                             ),

@@ -12,61 +12,50 @@ class FavoritesScreen extends ConsumerWidget {
     final favorites = ref.watch(favoriteProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.inverseSurface,
-        elevation: 0,
-        forceMaterialTransparency: true,
-        toolbarHeight: 100,
-        leadingWidth: 100,
-        primary: true,
-        centerTitle: true,
-        title: Text(
-          "Favorite ",
-          style: GoogleFonts.chakraPetch(fontSize: 25),
-        ),
-        // leading: IconButton(
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        //   icon: const ImageIcon(
-        //     size: 30,
-        //     AssetImage("assets/icons/back_arrow.png"),
-        //   ),
-        // ),
-      ),
+      // appBar: AppBar(
+      //   automaticallyImplyLeading: false,
+      //   backgroundColor: Theme.of(context).colorScheme.surface,
+      //   foregroundColor: Theme.of(context).colorScheme.inverseSurface,
+      //   elevation: 0,
+      //   forceMaterialTransparency: true,
+      //   toolbarHeight: 100,
+      //   leadingWidth: 100,
+      //   primary: true,
+      //   centerTitle: true,
+      //   title: Text(
+      //     "Favorite ",
+      //     style: GoogleFonts.chakraPetch(fontSize: 25),
+      //   ),
+      //   // leading: IconButton(
+      //   //   onPressed: () {
+      //   //     Navigator.pop(context);
+      //   //   },
+      //   //   icon: const ImageIcon(
+      //   //     size: 30,
+      //   //     AssetImage("assets/icons/back_arrow.png"),
+      //   //   ),
+      //   // ),
+      // ),
       body: favorites.isEmpty
-          ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Icon(
-                    //   Icons.favorite_border,
-                    //   size: 80,
-                    //   color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.3),
-                    // ),
-                    // const SizedBox(height: 20),
-                    // Text(
-                    //   "ยังไม่มีรายการโปรด",
-                    //   style: GoogleFonts.imprima(
-                    //     fontSize: 20,
-                    //     color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.7),
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 10),
-                    // Text(
-                    //   "กดปุ่ม ❤️ ในหน้าสินค้าเพื่อเพิ่มรายการโปรด",
-                    //   style: GoogleFonts.imprima(
-                    //     fontSize: 14,
-                    //     color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5),
-                    //   ),
-                    //   textAlign: TextAlign.center,
-                    // ),
-                  ],
-                ),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/icons/save.png',
+                    width: 80,
+                    height: 80,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "No favorites yet",
+                    style: GoogleFonts.chakraPetch(
+                      fontSize: 20,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    ),
+                  ),
+                ],
               ),
             )
           : Padding(

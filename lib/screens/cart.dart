@@ -1,4 +1,5 @@
 import 'package:brand_store_app/providers/cart_provider.dart';
+import 'package:brand_store_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,8 @@ class Cart extends ConsumerStatefulWidget {
 }
 
 class _CartState extends ConsumerState<Cart> {
+  bool _isCheckingProfile = false;
+
   Widget _buildCartItem(CartItem cartItem) {
     final selectedShirt = cartItem.shirt;
     final variantPrice = cartItem.selectedVariant?.price ?? selectedShirt.price;
@@ -189,6 +192,111 @@ class _CartState extends ConsumerState<Cart> {
     );
   }
 
+  Future<bool> _checkProfileComplete() async {
+    if (!AuthService().isLoggedIn) {
+      return false;
+    }
+
+    try {
+      final profile = await AuthService().getCurrentUserProfile();
+      if (profile == null) {
+        return false;
+      }
+
+      final name = profile['full_name'] as String?;
+      final phone = profile['phone'] as String?;
+      final address = profile['address'] as String?;
+
+      return (name != null && name.trim().isNotEmpty) &&
+          (phone != null && phone.trim().isNotEmpty) &&
+          (address != null && address.trim().isNotEmpty);
+    } catch (e) {
+      print('Error checking profile: $e');
+      return false;
+    }
+  }
+
+  void _showProfileIncompleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return AlertDialog(
+          backgroundColor: theme.dialogBackgroundColor,
+          title: Text(
+            'Profile Incomplete',
+            style: GoogleFonts.chakraPetch(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          content: Text(
+            'Please complete your profile information (Name, Phone Number, and Address) before proceeding to checkout.',
+            style: GoogleFonts.chakraPetch(
+              fontSize: 16,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.chakraPetch(
+                  fontSize: 16,
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushNamed(context, '/edit-profile');
+              },
+              child: Text(
+                'Go to Edit Profile',
+                style: GoogleFonts.chakraPetch(
+                  fontSize: 16,
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleProceedToPay() async {
+    setState(() {
+      _isCheckingProfile = true;
+    });
+
+    try {
+      final isComplete = await _checkProfileComplete();
+      if (!mounted) return;
+      
+      setState(() {
+        _isCheckingProfile = false;
+      });
+
+      if (isComplete) {
+        Navigator.pushNamed(context, '/checkout');
+      } else {
+        _showProfileIncompleteDialog();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isCheckingProfile = false;
+      });
+      print('Error checking profile: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartItems = ref.watch(cartProvider);
@@ -201,7 +309,7 @@ class _CartState extends ConsumerState<Cart> {
         isDark ? theme.colorScheme.background : const Color(0xFFF5F5F5);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      // backgroundColor: bgColor,
       body: SafeArea(
         child: cartItems.isEmpty
             ? Center(
@@ -367,9 +475,7 @@ class _CartState extends ConsumerState<Cart> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/checkout');
-                            },
+                            onPressed: _isCheckingProfile ? null : _handleProceedToPay,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red.shade400,
                               foregroundColor: Colors.white,
@@ -378,14 +484,26 @@ class _CartState extends ConsumerState<Cart> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               elevation: 0,
+                              disabledBackgroundColor: Colors.red.shade300,
                             ),
-                            child: Text(
-                              'Proceed To Pay · ฿${subtotal.toStringAsFixed(0)}',
-                              style: GoogleFonts.chakraPetch(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            child: _isCheckingProfile
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    'Proceed To Pay · ฿${subtotal.toStringAsFixed(0)}',
+                                    style: GoogleFonts.chakraPetch(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],

@@ -1,6 +1,7 @@
 import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:brand_store_app/screens/slip_verification.dart';
 import 'package:brand_store_app/services/storage_service.dart';
+import 'package:brand_store_app/services/auth_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,7 @@ class Checkout extends ConsumerStatefulWidget {
 
 class _CheckoutState extends ConsumerState<Checkout> {
   bool showAddressForm = false;
+  bool isLoadingAddress = true;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -31,11 +33,41 @@ class _CheckoutState extends ConsumerState<Checkout> {
   }
 
   Future<void> _loadSavedAddress() async {
+    setState(() {
+      isLoadingAddress = true;
+    });
+
+    // Try to load from user profile first
+    if (AuthService().isLoggedIn) {
+      try {
+        final profile = await AuthService().getCurrentUserProfile();
+        if (profile != null) {
+          setState(() {
+            savedName = profile['full_name'] as String?;
+            savedPhone = profile['phone'] as String?;
+            savedAddress = profile['address'] as String?;
+            isLoadingAddress = false;
+            // if we have profile info, show display mode
+            if ((savedName?.isNotEmpty ?? false) ||
+                (savedPhone?.isNotEmpty ?? false) ||
+                (savedAddress?.isNotEmpty ?? false)) {
+              showAddressForm = false;
+            }
+          });
+          return;
+        }
+      } catch (e) {
+        print('Error loading profile: $e');
+      }
+    }
+    
+    // Fallback to saved checkout info
     final info = await StorageService.loadCheckoutInfo();
     setState(() {
       savedName = info['name'];
       savedPhone = info['phone'];
       savedAddress = info['address'];
+      isLoadingAddress = false;
       // if we already have saved info, show display mode
       if ((savedName?.isNotEmpty ?? false) ||
           (savedPhone?.isNotEmpty ?? false) ||
@@ -298,125 +330,142 @@ class _CheckoutState extends ConsumerState<Checkout> {
         ),
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            Text(
-              "Delivery Address",
-              style: GoogleFonts.chakraPetch(
-                  fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .inverseSurface
-                      .withOpacity(0.7)),
-            ),
-            if (!showAddressForm) ...[
+      body: isLoadingAddress
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                  Text(
+                    "Delivery Address",
+                    style: GoogleFonts.chakraPetch(
+                        fontSize: 12,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .inverseSurface
+                            .withOpacity(0.7)),
+                  ),
+                  if (!showAddressForm) ...[
               Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        height: 120,
-                        width: MediaQuery.sizeOf(context).width * 0.6,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset("assets/images/quickmap.png"),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Siri Place Phaholyothin 52 ",
-                                    softWrap: true,
-                                    style: GoogleFonts.chakraPetch(
-                                        fontSize: 14,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .inverseSurface,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  if (savedName != null &&
-                                      savedName!.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "Name: $savedName",
-                                      style: GoogleFonts.chakraPetch(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.normal,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .inverseSurface
-                                            .withOpacity(0.8),
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                  if (savedPhone != null &&
-                                      savedPhone!.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      "Phone:$savedPhone",
-                                      style: GoogleFonts.chakraPetch(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.normal,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .inverseSurface
-                                            .withOpacity(0.8),
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                  if (savedAddress != null &&
-                                      savedAddress!.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      "Address: $savedAddress",
-                                      style: GoogleFonts.chakraPetch(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.normal,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .inverseSurface
-                                            .withOpacity(0.8),
-                                      ),
-                                      // maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          height: 10,
                         ),
-                      ),
-                      // const SizedBox(height: 16), // Add spacing before delivery time
-                    ],
+                        SizedBox(
+                          height: 120,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Image.asset("assets/images/quickmap.png"),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Siri Place Phaholyothin 52 ",
+                                      softWrap: true,
+                                      style: GoogleFonts.chakraPetch(
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .inverseSurface,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    if (savedName != null &&
+                                        savedName!.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "Name: $savedName",
+                                        style: GoogleFonts.chakraPetch(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.normal,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .inverseSurface
+                                              .withOpacity(0.8),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                    if (savedPhone != null &&
+                                        savedPhone!.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "Phone: $savedPhone",
+                                        style: GoogleFonts.chakraPetch(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.normal,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .inverseSurface
+                                              .withOpacity(0.8),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                    if (savedAddress != null &&
+                                        savedAddress!.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "Address: $savedAddress",
+                                        style: GoogleFonts.chakraPetch(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.normal,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .inverseSurface
+                                              .withOpacity(0.8),
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // const SizedBox(height: 16), // Add spacing before delivery time
+                      ],
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: () {
-                      // Load saved values into text fields
-                      nameController.text = savedName ?? '';
-                      phoneController.text = savedPhone ?? '';
-                      addressController.text = savedAddress ?? '';
-                      setState(() {
-                        showAddressForm = true;
-                      });
+                    onTap: () async {
+                      // If user is logged in, navigate to edit profile
+                      if (AuthService().isLoggedIn) {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          '/edit-profile',
+                        );
+                        if (result == true && mounted) {
+                          // Reload profile data after editing
+                          await _loadSavedAddress();
+                        }
+                      } else {
+                        // If not logged in, show form in checkout
+                        nameController.text = savedName ?? '';
+                        phoneController.text = savedPhone ?? '';
+                        addressController.text = savedAddress ?? '';
+                        setState(() {
+                          showAddressForm = true;
+                        });
+                      }
                     },
-                    child: Text("Change",
+                    child: Text("Edit",
                         style: GoogleFonts.chakraPetch(fontSize: 15)),
                   ),
                 ],
@@ -626,7 +675,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                 children: [
                   TextSpan(
                     text:
-                        "Don’t forget to fill in your name, phone number, and house address in the village",
+                        "Don’t forget to verify your name and address before placing your order",
                     style: GoogleFonts.chakraPetch(
                       fontSize: 15,
                       color: Theme.of(context)
@@ -676,9 +725,9 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     ),
                     const Spacer(),
                     Text(
-                      '${(ref.watch(cartProvider.notifier).totalCost).toStringAsFixed(0)}',
+                      '\฿${(ref.watch(cartProvider.notifier).totalCost).toStringAsFixed(0)}',
                       style: GoogleFonts.chakraPetch(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 15, fontWeight: FontWeight.w500),
                     )
                   ],
                 ),
@@ -701,7 +750,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     Text(
                       'Free',
                       style: GoogleFonts.chakraPetch(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 15, fontWeight: FontWeight.w500),
                     )
                   ],
                 ),
@@ -722,9 +771,9 @@ class _CheckoutState extends ConsumerState<Checkout> {
                     ),
                     const Spacer(),
                     Text(
-                      '${(ref.watch(cartProvider.notifier).totalCost + 0).toStringAsFixed(0)}',
+                      '\฿${(ref.watch(cartProvider.notifier).totalCost + 0).toStringAsFixed(0)}',
                       style: GoogleFonts.chakraPetch(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),

@@ -72,8 +72,8 @@ class _DetailsState extends ConsumerState<Details> {
                         SnackBar(
                           content: Text(
                             isFavorite
-                                ? "ลบออกจากรายการโปรด"
-                                : "เพิ่มในรายการโปรด",
+                                ? "Removed from favorites"
+                                : "Added to favorites",
                             style: GoogleFonts.chakraPetch(),
                           ),
                           duration: const Duration(milliseconds: 800),
@@ -296,6 +296,10 @@ class _DetailsState extends ConsumerState<Details> {
                       title: Text("เพิ่มสินค้า ใส่ตะกร้าเรียบร้อยแล้ว"),
                       duration: Duration(milliseconds: 1000),
                     ));
+                    // Navigate back to previous screen (product list/home)
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.red.shade400,

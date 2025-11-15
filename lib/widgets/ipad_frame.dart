@@ -35,9 +35,9 @@ class iPadFrame extends StatelessWidget {
     // Desktop view - show iPad frame
     // iPad dimensions: 768x1024 (portrait) or 1024x768 (landscape)
     // We'll use portrait orientation
-    const double iPadWidth = 768;
+    const double iPadWidth = 568;
     const double iPadHeight = 1024;
-    const double bezelWidth = 24;
+    const double bezelWidth = 22;
     const double cornerRadius = 50;
 
     return Container(

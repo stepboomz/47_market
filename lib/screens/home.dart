@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -204,11 +205,12 @@ class _HomeState extends ConsumerState<Home> {
                   //   borderRadius: BorderRadius.circular(8),
                   // ),
                   child: Text(
-                    '47 Market',
+                    '47Market - ',
                     style: GoogleFonts.chakraPetch(
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.onSurface,
+                      letterSpacing: 1.5
                     ),
                   ),
                 ),
@@ -575,6 +577,10 @@ class _HomeState extends ConsumerState<Home> {
                               GestureDetector(
                                 onTap: () {
                                   ref.read(cartProvider.notifier).addItem(product);
+                                  ShadToaster.of(context).show(const ShadToast(
+                                    title: Text("เพิ่มสินค้า ใส่ตะกร้าเรียบร้อยแล้ว"),
+                                    duration: Duration(milliseconds: 1000),
+                                  ));
                                 },
                                 child: Container(
                                   width: 38,

@@ -291,6 +291,9 @@ class SupabaseService {
       final String orderId = DateTime.now().millisecondsSinceEpoch.toString();
       final String orderNumber = _generateOrderNumber();
 
+      // Get current user ID
+      final userId = _client.auth.currentUser?.id;
+
       final orderData = {
         'id': orderId,
         'order_number': orderNumber,
@@ -300,6 +303,11 @@ class SupabaseService {
         'total_amount': totalAmount,
         'status': 'pending',
       };
+
+      // Add user_id if user is logged in
+      if (userId != null) {
+        orderData['user_id'] = userId;
+      }
 
       // Add trans_ref if provided
       if (transRef != null && transRef.isNotEmpty) {
@@ -365,6 +373,33 @@ class SupabaseService {
     }
   }
 
+  // Get orders for current user (only orders with trans_ref)
+  static Future<List<Map<String, dynamic>>> getUserOrders() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        return [];
+      }
+
+      final res = await _client
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      
+      // Filter to only include orders with trans_ref
+      final filtered = (res as List).where((order) {
+        final transRef = order['trans_ref'];
+        return transRef != null && transRef.toString().isNotEmpty;
+      }).toList();
+      
+      return List<Map<String, dynamic>>.from(filtered);
+    } catch (e) {
+      print('Error getUserOrders: $e');
+      return [];
+    }
+  }
+
   static Future<bool> updateOrderStatus(String orderId, String status) async {
     try {
       await _client.from('orders').update({'status': status}).eq('id', orderId);
@@ -372,6 +407,51 @@ class SupabaseService {
     } catch (e) {
       print('Error updateOrderStatus: $e');
       return false;
+    }
+  }
+
+  // Get order counts by status for current user
+  static Future<Map<String, int>> getUserOrderCounts() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        return {'pending': 0, 'processing': 0, 'completed': 0};
+      }
+
+      final res = await _client
+          .from('orders')
+          .select('status')
+          .eq('user_id', userId);
+      
+      // Filter to only include orders with trans_ref
+      final filtered = (res as List).where((order) {
+        final transRef = order['trans_ref'];
+        return transRef != null && transRef.toString().isNotEmpty;
+      }).toList();
+
+      int pending = 0;
+      int processing = 0;
+      int completed = 0;
+
+      for (var order in filtered) {
+        final status = (order['status'] as String? ?? '').toLowerCase();
+        if (status == 'pending') {
+          pending++;
+        } else if (status == 'processing') {
+          processing++;
+        } else if (status == 'completed') {
+          completed++;
+        }
+      }
+
+      return {
+        'pending': pending,
+        'processing': processing,
+        'completed': completed,
+      };
+    } catch (e) {
+      print('Error getUserOrderCounts: $e');
+      return {'pending': 0, 'processing': 0, 'completed': 0};
     }
   }
 }
