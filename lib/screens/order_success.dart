@@ -301,8 +301,12 @@ class OrderSuccessScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () => Navigator.of(context)
-                                    .popUntil((r) => r.isFirst),
+                                onPressed: () {
+                                  Navigator.of(context).pushNamedAndRemoveUntil(
+                                    '/main',
+                                    (route) => false,
+                                  );
+                                },
                                 style: OutlinedButton.styleFrom(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 14),
@@ -325,8 +329,9 @@ class OrderSuccessScreen extends StatelessWidget {
                             Expanded(
                               child: FilledButton(
                                 onPressed: () {
-                                  Navigator.of(context).popUntil((r) => r.isFirst);
-                                  Navigator.of(context).pushNamed('/order-history');
+                                  // Navigate to order history, replacing current route
+                                  // Back button will be handled by order_history screen
+                                  Navigator.of(context).pushReplacementNamed('/order-history');
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: Colors.black,

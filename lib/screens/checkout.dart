@@ -206,9 +206,9 @@ class _CheckoutState extends ConsumerState<Checkout> {
 
       final orderNumber = orderResult['orderNumber']!;
 
-      // Update order status to "completed" for cash payment
+      // Update order status to "pending" for cash payment
       final orderId = orderResult['orderId']!;
-      await SupabaseService.updateOrderStatus(orderId, 'completed');
+      await SupabaseService.updateOrderStatus(orderId, 'pending');
 
       // Clear cart
       ref.read(cartProvider.notifier).clearCart();
@@ -270,6 +270,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
     final parentContext = context;
     // Use finalTotal (after discount) for QR code
     final qrAmount = finalTotal;
+    // Calculate original total (before discount) to pass to slip verification
+    final originalTotal = ref.read(cartProvider.notifier).totalCost;
 
     showModalBottomSheet(
       context: context,
@@ -404,8 +406,7 @@ class _CheckoutState extends ConsumerState<Checkout> {
                   Expanded(
                     child: FilledButton(
                       onPressed: () async {
-                        // Calculate original total (before discount) for order creation
-                        final originalTotalForOrder = ref.read(cartProvider.notifier).totalCost;
+                        // Get items and original total before cart might be cleared
                         final items = ref
                             .read(cartProvider)
                             .map((it) => {
@@ -418,6 +419,8 @@ class _CheckoutState extends ConsumerState<Checkout> {
                                   'quantity': it.quantity,
                                 })
                             .toList();
+
+                        print('QR Modal: Using finalTotal=$finalTotal for slip verification, originalTotal=$originalTotal');
 
                         // Close QR modal and show slip verification modal
                         if (mounted) {
@@ -432,11 +435,13 @@ class _CheckoutState extends ConsumerState<Checkout> {
                               backgroundColor: Colors.transparent,
                               builder: (context) => SlipVerification(
                                 orderNumber: '', // Will be generated after verification
-                                totalAmount: originalTotalForOrder,
+                                totalAmount: finalTotal, // Use finalTotal (after discount) for verification
                                 customerName: savedName ?? '',
                                 customerPhone: savedPhone ?? '',
                                 customerAddress: savedAddress ?? '',
                                 orderItems: items,
+                                promoCodeId: promoCodeId,
+                                discountAmount: discountAmount,
                               ),
                             );
                           }

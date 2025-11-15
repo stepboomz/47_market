@@ -99,14 +99,24 @@ class _SlipVerificationState extends ConsumerState<SlipVerification> {
       }
 
       // Create order first (always create order)
+      // Calculate original total (before discount) for order creation
+      // widget.totalAmount is finalTotal (after discount), so add discount back if exists
+      final originalTotal = widget.discountAmount != null && widget.discountAmount! > 0
+          ? widget.totalAmount + widget.discountAmount!
+          : widget.totalAmount;
+      
+      print('Slip verification: Creating order with originalTotal=$originalTotal, finalTotal=${widget.totalAmount}, discountAmount=${widget.discountAmount}');
+      
       final orderResult = await SupabaseService.createOrder(
         customerName: widget.customerName,
         customerPhone: widget.customerPhone,
         customerAddress: widget.customerAddress,
-        totalAmount: widget.totalAmount,
+        totalAmount: originalTotal, // Use original total before discount
         items: widget.orderItems,
         slipImageUrl: slipImageUrl,
         paymentMethod: 'qr', // QR Code payment (PromptPay)
+        promoCodeId: widget.promoCodeId,
+        discountAmount: widget.discountAmount,
       );
 
       if (orderResult == null) {
@@ -176,64 +186,19 @@ class _SlipVerificationState extends ConsumerState<SlipVerification> {
           return;
         }
 
-        // Check if amount matches
+        // Check if amount matches (only check amount, if match then proceed to order success)
         final verifiedAmount = _verificationResult?['amount']?['amount']?.toDouble() ?? 0.0;
         final expectedAmount = widget.totalAmount;
-
-        // Check if receiver account matches our PromptPay ID
-        const String ourPromptPayId = '0957728931';
-        final receiver = _verificationResult?['receiver'];
-        final receiverProxy = receiver?['account']?['proxy'];
-        final receiverBank = receiver?['account']?['bank'];
         
-        // Check if receiver matches our PromptPay ID
-        // It could be in proxy.account (MSISDN) or bank.account
-        String? receiverAccount;
-        String? receiverAccountType;
+        // Check if amount matches (allow small difference for rounding)
+        final amountDifference = (verifiedAmount - expectedAmount).abs();
+        final amountMatches = amountDifference < 0.01;
         
-        if (receiverProxy != null && receiverProxy['account'] != null) {
-          receiverAccount = receiverProxy['account'].toString();
-          receiverAccountType = receiverProxy['type']?.toString();
-        } else if (receiverBank != null && receiverBank['account'] != null) {
-          receiverAccount = receiverBank['account'].toString();
-          receiverAccountType = receiverBank['type']?.toString();
-        }
-
-        // Normalize account numbers (remove dashes, spaces, x, etc.)
-        String normalizedReceiver = (receiverAccount ?? '').replaceAll(RegExp(r'[-\sxX]'), '');
-        String normalizedPromptPay = ourPromptPayId.replaceAll(RegExp(r'[-\s]'), '');
+        print('Slip verification: verifiedAmount=$verifiedAmount, expectedAmount=$expectedAmount, amountMatches=$amountMatches');
         
-        // Check if account matches
-        // For MSISDN (phone number), check if it matches exactly or contains the PromptPay ID
-        // For BANKAC (bank account), check last 4 digits if masked
-        bool accountMatches = false;
-        
-        if (receiverAccount != null && normalizedReceiver.isNotEmpty) {
-          if (receiverAccountType == 'MSISDN') {
-            // For phone number, check if it matches or contains the PromptPay ID
-            accountMatches = normalizedReceiver == normalizedPromptPay ||
-                normalizedReceiver.contains(normalizedPromptPay) ||
-                normalizedPromptPay.contains(normalizedReceiver);
-          } else {
-            // For bank account, check if last 4 digits match (in case of masking)
-            // Or if the account contains the PromptPay ID
-            if (normalizedReceiver.length >= 4 && normalizedPromptPay.length >= 4) {
-              String receiverLast4 = normalizedReceiver.length >= 4 
-                  ? normalizedReceiver.substring(normalizedReceiver.length - 4)
-                  : normalizedReceiver;
-              String promptPayLast4 = normalizedPromptPay.substring(normalizedPromptPay.length - 4);
-              accountMatches = receiverLast4 == promptPayLast4 ||
-                  normalizedReceiver == normalizedPromptPay ||
-                  normalizedReceiver.contains(normalizedPromptPay);
-            } else {
-              accountMatches = normalizedReceiver == normalizedPromptPay ||
-                  normalizedReceiver.contains(normalizedPromptPay);
-            }
-          }
-        }
-
-        if ((verifiedAmount - expectedAmount).abs() >= 0.01) {
+        if (!amountMatches) {
           // Amount doesn't match
+          print('Slip verification: Amount mismatch - Expected: $expectedAmount, Got: $verifiedAmount');
           if (mounted) {
             ShadToaster.of(context).show(
               ShadToast(
@@ -244,91 +209,82 @@ class _SlipVerificationState extends ConsumerState<SlipVerification> {
               ),
             );
           }
-        } else if (receiverAccount == null || receiverAccount.isEmpty) {
-          // No receiver account found in slip
-          if (mounted) {
-            ShadToaster.of(context).show(
-              ShadToast(
-                title: Text(
-                  'Cannot verify receiver account. Please ensure the slip shows the correct receiver information.',
-                ),
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          }
-        } else if (!accountMatches) {
-          // Account doesn't match
-          if (mounted) {
-            ShadToaster.of(context).show(
-              ShadToast(
-                title: Text(
-                  'Payment account mismatch. Please ensure you transfer to the correct PromptPay ID: $ourPromptPayId',
-                ),
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          }
-        } else {
-          // Amount and account match, check if transRef already used
-          final transRef = _verificationResult?['transRef']?.toString();
+          return;
+        }
+        
+        // Amount matches - proceed with order completion
+        final transRef = _verificationResult?['transRef']?.toString();
+        
+        if (transRef != null && transRef.isNotEmpty) {
+          // Check if this transaction reference has been used before
+          final isUsed = await SupabaseService.isTransRefUsed(transRef);
           
-          if (transRef != null && transRef.isNotEmpty) {
-            // Check if this transaction reference has been used before
-            final isUsed = await SupabaseService.isTransRefUsed(transRef);
-            
-            if (isUsed) {
-              // This slip has already been used
-              if (mounted) {
-                ShadToaster.of(context).show(
-                  const ShadToast(
-                    title: Text(
-                      'This payment slip has already been used. Order created but payment verification failed.',
-                    ),
-                    duration: Duration(seconds: 4),
-                  ),
-                );
-              }
-              // Order already created, just return
-              return;
-            }
-
-            // Update order with transRef
-            try {
-              await Supabase.instance.client.from('orders').update({'trans_ref': transRef}).eq('id', orderId);
-            } catch (e) {
-              print('Warning: Failed to update transRef: $e');
-            }
-          }
-
-          // Slip verification successful - update order status to "completed"
-          final updateSuccess = await SupabaseService.updateOrderStatus(orderId, 'completed');
-          
-          if (updateSuccess && mounted) {
-            // Clear cart
-            ref.read(cartProvider.notifier).clearCart();
-
-            // Close modal and navigate to success page
-            Navigator.of(context, rootNavigator: true).pop();
-            await Future.delayed(const Duration(milliseconds: 300));
-            if (mounted) {
-              Navigator.of(context, rootNavigator: true).pushReplacementNamed(
-                '/order-success',
-                arguments: {
-                  'orderNumber': orderNumber,
-                  'totalAmount': widget.totalAmount,
-                },
-              );
-            }
-          } else {
+          if (isUsed) {
+            // This slip has already been used
             if (mounted) {
               ShadToaster.of(context).show(
                 const ShadToast(
-                  title: Text('Order created but failed to update status.'),
-                  duration: Duration(seconds: 2),
+                  title: Text(
+                    'This payment slip has already been used. Order created but payment verification failed.',
+                  ),
+                  duration: Duration(seconds: 4),
                 ),
               );
             }
+            // Order already created, just return
+            return;
           }
+
+          // Update order with transRef
+          try {
+            await Supabase.instance.client.from('orders').update({'trans_ref': transRef}).eq('id', orderId);
+            print('Slip verification: Updated order with transRef=$transRef');
+          } catch (e) {
+            print('Warning: Failed to update transRef: $e');
+          }
+        }
+
+        // Slip verification successful - update order status to "completed"
+        final updateSuccess = await SupabaseService.updateOrderStatus(orderId, 'completed');
+        
+        print('Slip verification: updateSuccess=$updateSuccess, orderId=$orderId, orderNumber=$orderNumber');
+        
+        // Navigate to success page even if update status fails (order is already created)
+        if (mounted) {
+          // Clear cart
+          ref.read(cartProvider.notifier).clearCart();
+
+          // Store navigation data before closing modal
+          final navOrderNumber = orderNumber;
+          final navTotalAmount = widget.totalAmount;
+          
+          // Get the root navigator context before closing modal
+          final rootNavigator = Navigator.of(context, rootNavigator: true);
+          
+          // Close modal first
+          rootNavigator.pop();
+          
+          // Use microtask to navigate after modal is closed
+          Future.microtask(() {
+            print('Slip verification: Navigating to order-success with orderNumber=$navOrderNumber');
+            rootNavigator.pushNamedAndRemoveUntil(
+              '/order-success',
+              (route) => false, // Remove all previous routes
+              arguments: {
+                'orderNumber': navOrderNumber,
+                'totalAmount': navTotalAmount,
+                'paymentMethod': 'qr',
+              },
+            );
+          });
+        } else {
+          print('Slip verification: Widget not mounted');
+        }
+        
+        // Show warning if update status failed (but still navigate)
+        if (!updateSuccess) {
+          print('Slip verification: Warning - Failed to update order status');
+          // Don't show toast as we're navigating anyway
         }
       } else {
         if (mounted) {

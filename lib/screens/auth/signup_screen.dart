@@ -2,6 +2,7 @@ import 'package:brand_store_app/core/util/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../services/auth_service.dart';
 
@@ -153,7 +154,16 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         const SizedBox(height: 16),
                         _isLoading
-                            ? const ShadProgress()
+                            ? Hero(
+                                tag: 'button',
+                                child: ShadButton(
+                                  onPressed: null,
+                                  child: SpinKitDancingSquare(
+                                    color: Colors.white,
+                                    size: 20.0,
+                                  ),
+                                ),
+                              )
                             : Hero(
                                 tag: 'button',
                                 child: ShadButton(

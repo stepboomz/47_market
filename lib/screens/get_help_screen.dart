@@ -71,60 +71,60 @@ class GetHelpScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.red.shade900.withOpacity(0.2)
-                    : Colors.red.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.red.shade200.withOpacity(0.5),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.help_outline,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Need Help?',
-                          style: GoogleFonts.chakraPetch(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'We\'re here to assist you',
-                          style: GoogleFonts.chakraPetch(
-                            fontSize: 14,
-                            color: colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
+            // Container(
+            //   padding: const EdgeInsets.all(20),
+            //   decoration: BoxDecoration(
+            //     color: isDark
+            //         ? Colors.red.shade900.withOpacity(0.2)
+            //         : Colors.red.shade50,
+            //     borderRadius: BorderRadius.circular(16),
+            //     border: Border.all(
+            //       color: Colors.red.shade200.withOpacity(0.5),
+            //       width: 1,
+            //     ),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       Container(
+            //         padding: const EdgeInsets.all(12),
+            //         decoration: BoxDecoration(
+            //           color: Colors.red.shade400,
+            //           borderRadius: BorderRadius.circular(12),
+            //         ),
+            //         child: const Icon(
+            //           Icons.help_outline,
+            //           color: Colors.white,
+            //           size: 28,
+            //         ),
+            //       ),
+            //       const SizedBox(width: 16),
+            //       Expanded(
+            //         child: Column(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           children: [
+            //             Text(
+            //               'Need Help?',
+            //               style: GoogleFonts.chakraPetch(
+            //                 fontSize: 18,
+            //                 fontWeight: FontWeight.bold,
+            //                 color: colorScheme.onSurface,
+            //               ),
+            //             ),
+            //             const SizedBox(height: 4),
+            //             Text(
+            //               'We\'re here to assist you',
+            //               style: GoogleFonts.chakraPetch(
+            //                 fontSize: 14,
+            //                 color: colorScheme.onSurface.withOpacity(0.7),
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // const SizedBox(height: 32),
 
             // Contact Support Section
             Text(

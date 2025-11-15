@@ -330,41 +330,42 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 ),
               ),
             ),
-            // E-Receipt button
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(
-                      context,
-                      '/e-receipt',
-                      arguments: order,
-                    );
-                  },
-                  icon: const Icon(Icons.receipt_long),
-                  label: Text(
-                    'E-Receipt',
-                    style: GoogleFonts.chakraPetch(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+            // E-Receipt button (only show when status is completed)
+            if ((order['status'] as String? ?? 'pending').toLowerCase() == 'completed')
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(
+                        context,
+                        '/e-receipt',
+                        arguments: order,
+                      );
+                    },
+                    icon: const Icon(Icons.receipt_long),
+                    label: Text(
+                      'E-Receipt',
+                      style: GoogleFonts.chakraPetch(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
