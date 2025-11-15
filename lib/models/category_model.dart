@@ -9,7 +9,7 @@ class BrandCategory {
   String get displayName {
     switch (type) {
       case BrandType.all:
-        return '🛍️ ทั้งหมด';
+        return '🛒 ทั้งหมด';
       case BrandType.readyMeals:
         return '🍱 ของกิน';
       case BrandType.ingredients:
