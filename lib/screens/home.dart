@@ -204,14 +204,26 @@ class _HomeState extends ConsumerState<Home> {
                   //       : Colors.grey.shade200,
                   //   borderRadius: BorderRadius.circular(8),
                   // ),
-                  child: Text(
-                    '47Market - ',
-                    style: GoogleFonts.chakraPetch(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
-                      letterSpacing: 1.5
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/logo.jpg',
+                        width: 34,
+                        height: 34,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '47Market',
+                        style: GoogleFonts.chakraPetch(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                          letterSpacing: 1.5
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

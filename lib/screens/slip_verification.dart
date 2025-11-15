@@ -101,6 +101,7 @@ class _SlipVerificationState extends ConsumerState<SlipVerification> {
         totalAmount: widget.totalAmount,
         items: widget.orderItems,
         slipImageUrl: slipImageUrl,
+        paymentMethod: 'qr', // QR Code payment (PromptPay)
       );
 
       if (orderResult == null) {

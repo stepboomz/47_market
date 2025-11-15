@@ -2,11 +2,13 @@ import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:brand_store_app/screens/slip_verification.dart';
 import 'package:brand_store_app/services/storage_service.dart';
 import 'package:brand_store_app/services/auth_service.dart';
+import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class Checkout extends ConsumerStatefulWidget {
   const Checkout({super.key});
@@ -18,6 +20,7 @@ class Checkout extends ConsumerStatefulWidget {
 class _CheckoutState extends ConsumerState<Checkout> {
   bool showAddressForm = false;
   bool isLoadingAddress = true;
+  String selectedPaymentMethod = 'qr'; // 'qr' or 'cash'
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -97,6 +100,100 @@ class _CheckoutState extends ConsumerState<Checkout> {
           (savedPhone?.trim().isNotEmpty ?? false) &&
           (savedAddress?.trim().isNotEmpty ?? false);
     }
+  }
+
+  Future<void> _processCashPayment(double totalAmount) async {
+    final items = ref
+        .read(cartProvider)
+        .map((it) => {
+              'product_id': it.shirt.id,
+              'variant_id': it.selectedVariant?.id,
+              'name': it.selectedVariant?.name ?? it.shirt.name,
+              'price': (it.selectedVariant?.price ?? it.shirt.price),
+              'quantity': it.quantity,
+            })
+        .toList();
+
+    try {
+      // Create order for cash payment
+      final orderResult = await SupabaseService.createOrder(
+        customerName: savedName ?? '',
+        customerPhone: savedPhone ?? '',
+        customerAddress: savedAddress ?? '',
+        totalAmount: totalAmount,
+        items: items,
+        slipImageUrl: null, // No slip for cash payment
+        paymentMethod: 'cash',
+      );
+
+      if (orderResult == null) {
+        if (mounted) {
+          ShadToaster.of(context).show(
+            const ShadToast(
+              title: Text('Error creating order. Please try again.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      final orderNumber = orderResult['orderNumber']!;
+
+      // Update order status to "completed" for cash payment
+      final orderId = orderResult['orderId']!;
+      await SupabaseService.updateOrderStatus(orderId, 'completed');
+
+      // Clear cart
+      ref.read(cartProvider.notifier).clearCart();
+
+      // Navigate to order success page
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed(
+          '/order-success',
+          arguments: {
+            'orderNumber': orderNumber,
+            'totalAmount': totalAmount,
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ShadToaster.of(context).show(
+          ShadToast(
+            title: Text('Error: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showSlipVerificationModal(double totalAmount) {
+    final items = ref
+        .read(cartProvider)
+        .map((it) => {
+              'product_id': it.shirt.id,
+              'variant_id': it.selectedVariant?.id,
+              'name': it.selectedVariant?.name ?? it.shirt.name,
+              'price': (it.selectedVariant?.price ?? it.shirt.price),
+              'quantity': it.quantity,
+            })
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SlipVerification(
+        orderNumber: '', // Will be generated after verification
+        totalAmount: totalAmount,
+        customerName: savedName ?? '',
+        customerPhone: savedPhone ?? '',
+        customerAddress: savedAddress ?? '',
+        orderItems: items,
+      ),
+    );
   }
 
   void _showQRCodeModal(double totalAmount) {
@@ -638,11 +735,114 @@ class _CheckoutState extends ConsumerState<Checkout> {
               height: 10,
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Image.asset(
-                  "assets/images/payment/promptpay.png",
-                  width: 50,
+                // PromptPay (QR Code) option
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedPaymentMethod = 'qr';
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: selectedPaymentMethod == 'qr'
+                            ? Colors.red.shade50
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: selectedPaymentMethod == 'qr'
+                              ? Colors.red.shade400
+                              : Colors.grey.shade300,
+                          width: selectedPaymentMethod == 'qr' ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            "assets/images/payment/promptpay.png",
+                            width: 32,
+                            height: 32,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              "PromptPay",
+                              style: GoogleFonts.chakraPetch(
+                                fontSize: 13,
+                                fontWeight: selectedPaymentMethod == 'qr'
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .inverseSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Cash option
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedPaymentMethod = 'cash';
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: selectedPaymentMethod == 'cash'
+                            ? Colors.red.shade50
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: selectedPaymentMethod == 'cash'
+                              ? Colors.red.shade400
+                              : Colors.grey.shade300,
+                          width: selectedPaymentMethod == 'cash' ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.money,
+                            size: 20,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .inverseSurface,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              "Cash",
+                              style: GoogleFonts.chakraPetch(
+                                fontSize: 13,
+                                fontWeight: selectedPaymentMethod == 'cash'
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .inverseSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -823,7 +1023,12 @@ class _CheckoutState extends ConsumerState<Checkout> {
                             // Add delivery fee (assuming 0 for free delivery)
                             totalAmount += 0;
 
-                            _showQRCodeModal(totalAmount);
+                            // Show different modal based on selected payment method
+                            if (selectedPaymentMethod == 'cash') {
+                              _processCashPayment(totalAmount);
+                            } else {
+                              _showQRCodeModal(totalAmount);
+                            }
                           }
                         : null,
                     style: FilledButton.styleFrom(

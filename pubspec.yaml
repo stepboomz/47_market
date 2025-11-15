@@ -95,6 +95,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/logo.jpg
     - assets/images/shirts/
     - assets/images/payment/
     - assets/images/readyMeals/

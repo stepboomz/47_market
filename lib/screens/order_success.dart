@@ -308,8 +308,10 @@ class OrderSuccessScreen extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: FilledButton(
-                                onPressed: () => Navigator.of(context)
-                                    .popUntil((r) => r.isFirst),
+                                onPressed: () {
+                                  Navigator.of(context).popUntil((r) => r.isFirst);
+                                  Navigator.of(context).pushNamed('/order-history');
+                                },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: Colors.black,
                                   padding:

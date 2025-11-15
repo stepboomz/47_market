@@ -286,6 +286,7 @@ class SupabaseService {
     required List<Map<String, dynamic>> items,
     String? transRef,
     String? slipImageUrl,
+    String? paymentMethod, // 'qr' or 'cash'
   }) async {
     try {
       final String orderId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -317,6 +318,11 @@ class SupabaseService {
       // Add slip_image_url if provided
       if (slipImageUrl != null && slipImageUrl.isNotEmpty) {
         orderData['slip_image_url'] = slipImageUrl;
+      }
+
+      // Add payment_method if provided
+      if (paymentMethod != null && paymentMethod.isNotEmpty) {
+        orderData['payment_method'] = paymentMethod;
       }
 
       await _client.from('orders').insert(orderData);
@@ -373,7 +379,9 @@ class SupabaseService {
     }
   }
 
-  // Get orders for current user (only orders with trans_ref)
+  // Get orders for current user
+  // - Cash payment: show all orders
+  // - QR payment: only show orders with trans_ref
   static Future<List<Map<String, dynamic>>> getUserOrders() async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -387,9 +395,23 @@ class SupabaseService {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
       
-      // Filter to only include orders with trans_ref
+      // Filter based on payment method
       final filtered = (res as List).where((order) {
+        final paymentMethod = order['payment_method'] as String?;
         final transRef = order['trans_ref'];
+        
+        // Cash payment: show all orders
+        if (paymentMethod == 'cash') {
+          return true;
+        }
+        
+        // QR payment: only show if trans_ref exists
+        if (paymentMethod == 'qr') {
+          return transRef != null && transRef.toString().isNotEmpty;
+        }
+        
+        // For backward compatibility: if payment_method is null, check trans_ref
+        // (old orders without payment_method)
         return transRef != null && transRef.toString().isNotEmpty;
       }).toList();
       
@@ -411,6 +433,8 @@ class SupabaseService {
   }
 
   // Get order counts by status for current user
+  // - Cash payment: count all orders
+  // - QR payment: only count orders with trans_ref
   static Future<Map<String, int>> getUserOrderCounts() async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -420,12 +444,26 @@ class SupabaseService {
 
       final res = await _client
           .from('orders')
-          .select('status')
+          .select('status, payment_method, trans_ref')
           .eq('user_id', userId);
       
-      // Filter to only include orders with trans_ref
+      // Filter based on payment method
       final filtered = (res as List).where((order) {
+        final paymentMethod = order['payment_method'] as String?;
         final transRef = order['trans_ref'];
+        
+        // Cash payment: count all orders
+        if (paymentMethod == 'cash') {
+          return true;
+        }
+        
+        // QR payment: only count if trans_ref exists
+        if (paymentMethod == 'qr') {
+          return transRef != null && transRef.toString().isNotEmpty;
+        }
+        
+        // For backward compatibility: if payment_method is null, check trans_ref
+        // (old orders without payment_method)
         return transRef != null && transRef.toString().isNotEmpty;
       }).toList();
 
