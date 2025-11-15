@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:snow_fall_animation/snow_fall_animation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -158,9 +159,24 @@ class MyApp extends ConsumerWidget {
       },
       home: const MainScreen(),
       builder: (context, child) {
-        // Wrap with iPad frame on desktop
+        // Wrap with iPad frame on desktop and add snow fall animation
         if (child != null) {
-          return iPadFrame(child: child);
+          return Stack(
+            children: [
+              iPadFrame(child: child),
+              // Snow fall animation overlay (non-interactive)
+              IgnorePointer(
+                child: SnowFallAnimation(
+                  config: SnowfallConfig(
+                    numberOfSnowflakes: 50,
+                    speed: 1.0,
+                    useEmoji: true,
+                    customEmojis: ['❄️', '❅', '❆'],
+                  ),
+                ),
+              ),
+            ],
+          );
         }
         return const SizedBox.shrink();
       },
