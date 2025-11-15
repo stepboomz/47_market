@@ -2,6 +2,7 @@ import 'package:brand_store_app/models/category_model.dart';
 import 'package:brand_store_app/models/shirt_model.dart';
 import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -197,7 +198,12 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
         children: [
           // Categories reorder tab
           _loadingCategories
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: SpinKitDancingSquare(
+                    color: Colors.red,
+                    size: 50.0,
+                  ),
+                )
               : Column(
                   children: [
                     Expanded(
@@ -234,7 +240,12 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
 
           // Products CRUD tab
           _loadingProducts
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: SpinKitDancingSquare(
+                    color: Colors.red,
+                    size: 50.0,
+                  ),
+                )
               : Column(
                   children: [
                     Padding(
@@ -279,7 +290,12 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                 ),
           // Orders tab
           _loadingOrders
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: SpinKitDancingSquare(
+                    color: Colors.red,
+                    size: 50.0,
+                  ),
+                )
               : ListView.separated(
                   itemCount: _orders.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
@@ -404,7 +420,16 @@ class _AdminAuthGateState extends State<_AdminAuthGate> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _loading ? null : _signIn,
-                    child: _loading ? const CircularProgressIndicator() : const Text('Sign in'),
+                    child: _loading
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: SpinKitDancingSquare(
+                              color: Colors.white,
+                              size: 20.0,
+                            ),
+                          )
+                        : const Text('Sign in'),
                   ),
                 ),
               ],

@@ -6,6 +6,7 @@ import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -429,7 +430,10 @@ class _CheckoutState extends ConsumerState<Checkout> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: isLoadingAddress
           ? const Center(
-              child: CircularProgressIndicator(),
+              child: SpinKitDancingSquare(
+                color: Colors.red,
+                size: 50.0,
+              ),
             )
           : SingleChildScrollView(
               physics: const BouncingScrollPhysics(),

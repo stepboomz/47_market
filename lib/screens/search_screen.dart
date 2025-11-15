@@ -4,6 +4,7 @@ import 'package:brand_store_app/resources/app_data.dart';
 import 'package:brand_store_app/widgets/items_gridview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -130,7 +131,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ],
         ),
         body: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: SpinKitDancingSquare(
+                  color: Colors.red,
+                  size: 50.0,
+                ),
+              )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

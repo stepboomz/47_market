@@ -2,6 +2,7 @@ import 'package:brand_store_app/providers/cart_provider.dart';
 import 'package:brand_store_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cart extends ConsumerStatefulWidget {
@@ -502,11 +503,9 @@ class _CartState extends ConsumerState<Cart> {
                                 ? const SizedBox(
                                     height: 20,
                                     width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
+                                    child: SpinKitDancingSquare(
+                                      color: Colors.white,
+                                      size: 20.0,
                                     ),
                                   )
                                 : Text(

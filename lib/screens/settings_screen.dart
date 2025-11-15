@@ -5,6 +5,7 @@ import 'package:brand_store_app/services/auth_service.dart';
 import 'package:brand_store_app/screens/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -173,11 +174,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       showDialog(
                                         context: context,
                                         barrierDismissible: false,
-                  builder: (dialogContext) => Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
+                  builder: (dialogContext) => const Center(
+                    child: SpinKitDancingSquare(
+                      color: Colors.red,
+                      size: 50.0,
                     ),
-                                        ),
+                  ),
                                       );
 
                                       try {

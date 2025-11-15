@@ -1,5 +1,6 @@
 import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -399,7 +400,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       ),
       backgroundColor: theme.colorScheme.surface,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: SpinKitDancingSquare(
+                color: Colors.red,
+                size: 50.0,
+              ),
+            )
           : Column(
               children: [
                 Padding(

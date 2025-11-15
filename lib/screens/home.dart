@@ -5,6 +5,7 @@ import 'package:brand_store_app/resources/app_data.dart';
 import 'package:brand_store_app/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -143,7 +144,12 @@ class _HomeState extends ConsumerState<Home> {
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: SpinKitDancingSquare(
+                color: Colors.red,
+                size: 50.0,
+              ),
+            )
           : SafeArea(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
